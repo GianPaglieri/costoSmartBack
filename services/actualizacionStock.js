@@ -1,13 +1,14 @@
 const Ingrediente = require('../models/Ingrediente');
-const Torta = require('../models/Torta');
+const receta = require('../models/Receta');
+
 const db = require('../database/connection');
 
-const actualizarStockIngredientes = async (idTorta) => {
+const actualizarStockIngredientes = async (idtorta) => {
   try {
-    const recetas = await Torta.findAll({ where: { id_torta: idTorta } });
+    const recetas = await receta.findAll({ where: { id_torta: idtorta } });
 
     if (!recetas || recetas.length === 0) {
-      throw new Error('No se encontraron recetas para la torta');
+      throw new Error('No se encontraron recetas para la receta');
     }
 
     for (const receta of recetas) {

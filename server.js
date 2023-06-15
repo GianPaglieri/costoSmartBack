@@ -8,7 +8,7 @@ const { actualizarListaPrecios, calcularCostoTotalReceta } = require('./services
 
 db.authenticate()
     .then(() => {
-        console.log('Conexi�n exitosa a la base de datos');
+        console.log('Conexion exitosa a la base de datos');
     })
     .catch((error) => {
         console.error('Error al conectar a la base de datos:', error);
@@ -19,11 +19,13 @@ app.use(express.json());
 
 const ingredientesRoutes = require('./routes/ingredientes');
 const tortasRoutes = require('./routes/tortas');
+const recetasRoutes = require('./routes/tortas');
 const listaPreciosRoutes = require('./routes/lista_precios');
 const ventasRoutes = require('./routes/ventas');
 app.use('/ventas', ventasRoutes);
 app.use('/ingredientes', ingredientesRoutes);
 app.use('/tortas', tortasRoutes);
+app.use('/recetas', recetasRoutes);
 
 app.use('/lista_precios', listaPreciosRoutes);
 actualizarListaPrecios();

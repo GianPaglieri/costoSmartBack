@@ -1,4 +1,4 @@
-const Venta = require('../models/venta');
+const Venta = require('../models/Venta');
 const { actualizarStockIngredientes } = require('../services/actualizacionStock');
 
 exports.registrarVenta = async (req, res) => {
@@ -9,7 +9,7 @@ exports.registrarVenta = async (req, res) => {
   try {
     console.log('Creando nueva venta con id_torta:', id_torta);
     const venta = await Venta.create({
-      id_torta,
+      ID_TORTA: id_torta, // Utilizar el nombre del campo definido en el modelo
     });
 
     console.log('Venta creada:', venta);
@@ -27,6 +27,7 @@ exports.registrarVenta = async (req, res) => {
     res.status(500).json({ success: false, error: 'Error al registrar la venta' });
   }
 };
+
 
 
 

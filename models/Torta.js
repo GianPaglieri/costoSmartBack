@@ -1,11 +1,11 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const db = require('../database/connection');
-const Ingrediente = require('./Ingrediente');
+
 
 const Torta = db.define(
     'Torta',
     {
-        id_torta: {
+        ID_TORTA: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
@@ -14,25 +14,18 @@ const Torta = db.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        id_ingrediente: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        cantidad_ingrediente: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        unidad_medida: {
+        descripcion_torta: {
             type: DataTypes.STRING,
             allowNull: false,
         },
     },
     {
-        tableName: 'recetas',
+        tableName: 'tortas',
         timestamps: false,
     }
 );
 
-Torta.belongsTo(Ingrediente, { foreignKey: 'id_ingrediente' });
+
+
 
 module.exports = Torta;

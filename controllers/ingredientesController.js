@@ -14,10 +14,14 @@ exports.obtenerIngredientes = (req, res) => {
     });
 };
 
-// Controlador para guardar un nuevo ingrediente
 exports.guardarIngrediente = (req, res) => {
   const { nombre, unidad_Medida, tamano_Paquete, costo, CantidadStock } = req.body;
   console.log('Datos del ingrediente:', req.body);
+
+  if (!nombre || !unidad_Medida || !tamano_Paquete || !costo || !CantidadStock) {
+    return res.status(400).json({ error: 'Faltan campos requeridos para guardar el ingrediente' });
+  }
+
   Ingrediente.create({
     nombre,
     unidad_Medida,
@@ -30,11 +34,58 @@ exports.guardarIngrediente = (req, res) => {
       res.json({ success: true });
     })
     .catch((error) => {
-      console.error('Error al guardar el ingredientea:', error, req.body);
-      console.log('Datos del ingrediente:', req.body);
-      res.status(500).json({ error: 'Error al guardar el ingredientes' , error , reqbody});
+      console.error('Error al guardar el ingrediente:', error);
+      res.status(500).json({ error: 'Error al guardar el ingrediente' });
     });
 };
+
+exports.editarIngrediente = (req, res) => {
+  const { id } = req.params; // Obtener el ID del ingrediente de los parámetros de la URL
+  const { nombre, unidad_Medida, tamano_Paquete, costo, CantidadStock } = req.body;
+  console.log('Datos del ingrediente:', req.body);
+
+  if (!nombre || !unidad_Medida || !tamano_Paquete || !costo || !CantidadStock) {
+    return res.status(400).json({ error: 'Faltan campos requeridos para editar el ingrediente' });
+  }
+
+  Ingrediente.update(
+    {
+      nombre,
+      unidad_Medida,
+      tamano_Paquete,
+      costo,
+      CantidadStock,
+    },
+    {
+      where: { id },
+    }
+  )
+    .then(() => {
+      console.log('Ingrediente editado exitosamente');
+      res.json({ success: true });
+    })
+    .catch((error) => {
+      console.error('Error al editar el ingrediente:', error);
+      res.status(500).json({ error: 'Error al editar el ingrediente' });
+    });
+};
+exports.eliminarIngrediente = (req, res) => {
+  const { id } = req.params; // Obtener el ID del ingrediente de los parámetros de la URL
+
+  Ingrediente.destroy({
+    where: { id },
+  })
+    .then(() => {
+      console.log('Ingrediente eliminado exitosamente');
+      res.json({ success: true });
+    })
+    .catch((error) => {
+      console.error('Error al eliminar el ingrediente:', error);
+      res.status(500).json({ error: 'Error al eliminar el ingrediente' });
+    });
+};
+
+
 
 
 

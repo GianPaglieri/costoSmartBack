@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const db = require('../database/connection');
-const Receta = require('./Torta');
+const Torta = require('./Torta');
 
 const Venta = db.define('Venta', {
   ID: {
@@ -8,16 +8,17 @@ const Venta = db.define('Venta', {
     primaryKey: true,
     autoIncrement: true,
   },
-  id_torta: {
+  ID_TORTA: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    field: 'id_torta', // Nombre de la columna en la base de datos
   },
 }, {
   tableName: 'ventas',
   timestamps: false,
 });
 
-Venta.belongsTo(Receta, { foreignKey: 'id_torta', targetKey: 'id_torta' });
+Venta.belongsTo(Torta, { foreignKey: 'ID_TORTA', targetKey: 'ID_TORTA' });
 
 module.exports = Venta;
 
