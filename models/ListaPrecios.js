@@ -8,6 +8,7 @@ const ListaPrecios = db.define(
             type: DataTypes.INTEGER,
             primaryKey: true,
             allowNull: false,
+            autoIncrement: false,
         },
         nombre_torta: {
             type: DataTypes.STRING,

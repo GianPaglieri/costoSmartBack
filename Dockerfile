@@ -8,7 +8,7 @@ WORKDIR /backend
 COPY package.json .
 COPY package-lock.json .
 
-# Instala las dependenciasdocker
+# Instala las dependencias
 RUN npm install
 
 # Copia el resto del código fuente
@@ -19,4 +19,5 @@ EXPOSE 3000
 
 # Comando para iniciar el backend
 CMD [ "node", "server.js" ]
+
 

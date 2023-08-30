@@ -1,5 +1,6 @@
 const ListaPrecios = require('../models/ListaPrecios');
-const Receta = require('../models/Torta');
+const Receta = require('../models/Receta');
+const Torta = require('../models/Torta');
 const Ingrediente = require('../models/Ingrediente');
 
 exports.actualizarCostoTotalReceta = async (req, res) => {
@@ -10,7 +11,7 @@ exports.actualizarCostoTotalReceta = async (req, res) => {
         const receta = await Receta.findOne({ where: { id_torta: idTorta } });
 
         if (!receta) {
-            throw new Error('No se encontró la receta');
+            throw new Error('No se encontrï¿½ la receta');
         }
 
         // Calcular el costo total de la receta

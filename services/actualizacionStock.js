@@ -1,19 +1,17 @@
 const Ingrediente = require('../models/Ingrediente');
-const receta = require('../models/Receta');
+const Receta = require('../models/Receta');
 
-const db = require('../database/connection');
-
-const actualizarStockIngredientes = async (idtorta) => {
+const actualizarStockIngredientes = async (idTorta) => {
   try {
-    const recetas = await receta.findAll({ where: { id_torta: idtorta } });
+    const recetas = await Receta.findAll({ where: { id_torta: idTorta } });
 
     if (!recetas || recetas.length === 0) {
-      throw new Error('No se encontraron recetas para la receta');
+      throw new Error('No se encontraron recetas para la torta');
     }
 
     for (const receta of recetas) {
-      const idIngrediente = receta.id_ingrediente;
-      const cantidadRequerida = receta.cantidad_ingrediente;
+      const idIngrediente = receta.ID_INGREDIENTE;
+      const cantidadRequerida = receta.cantidad;
 
       const ingrediente = await Ingrediente.findByPk(idIngrediente);
 
@@ -46,6 +44,8 @@ const actualizarStockIngredientes = async (idtorta) => {
 };
 
 module.exports = { actualizarStockIngredientes };
+
+
 
 
 

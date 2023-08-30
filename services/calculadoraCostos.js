@@ -1,81 +1,89 @@
-const Ingrediente = require('../models/Ingrediente');
-const Recetas = require('../models/Receta');
+const Receta = require('../models/Receta');
 const ListaPrecios = require('../models/ListaPrecios');
+const Ingrediente = require('../models/Ingrediente');
 
-// Función para calcular el costo total de una receta
 const calcularCostoTotalReceta = async (idTorta) => {
-    try {
-        // Obtiene la receta con el ID proporcionado
-        const receta = await Recetas.findOne({ where: { ID_TORTA: idTorta } });
+  try {
+    console.log('Calculando costo total de la receta...');
 
-        if (!receta) {
-            throw new Error('No se encontró la receta');
-        }
+    const recetas = await Receta.findAll({ where: { ID_TORTA: idTorta } });
 
-        // Obtiene los ingredientes y cantidades asociadas a la receta
-        const ingredientesReceta = await Recetas.findAll({
-            where: { ID_TORTA: idTorta },
-            include: [{ model: Ingrediente }],
-        });
-
-        // Calcula el costo total de la receta sumando el costo unitario ajustado por el tamaño del paquete de cada ingrediente
-        let costoTotal = 0;
-        ingredientesReceta.forEach((ingredienteReceta) => {
-            const ingrediente = ingredienteReceta.Ingrediente;
-            const cantidadIngrediente = ingredienteReceta.cantidad;
-            const costoUnitario = ingrediente.costo;
-            const tamanoPaquete = ingrediente.tamanoPaquete;
-
-            // Calcula el costo unitario ajustado considerando el tamaño del paquete
-            const costoUnitarioAjustado = costoUnitario / tamanoPaquete;
-
-            const costoIngrediente = costoUnitarioAjustado * cantidadIngrediente;
-            costoTotal += costoIngrediente;
-        });
-
-        return costoTotal;
-    } catch (error) {
-        throw new Error(`Error al calcular el costo total de la receta: ${error.message}`);
+    if (recetas.length === 0) {
+      throw new Error('No se encontró la receta');
     }
+
+    let costoTotal = 0;
+
+    for (const receta of recetas) {
+      const ingredienteId = receta.ID_INGREDIENTE;
+      const ingrediente = await Ingrediente.findOne({ where: { id: ingredienteId } });
+
+      if (!ingrediente) {
+        throw new Error(`No se encontró el ingrediente con ID ${ingredienteId}`);
+      }
+
+      const cantidad = receta.cantidad || 0;
+      const tamanoPaquete = ingrediente.tamano_Paquete || 1;
+
+      const costoIngrediente = parseFloat(ingrediente.costo);
+      const costoPorUnidad = costoIngrediente / tamanoPaquete;
+
+      costoTotal += costoPorUnidad * cantidad;
+    }
+
+    console.log('Costo total calculado:', costoTotal);
+
+    return costoTotal;
+  } catch (error) {
+    throw new Error(`Error al calcular el costo total de la receta: ${error.message}`);
+  }
 };
 
 const actualizarListaPrecios = async () => {
-    try {
-        // Obtiene todas las recetas existentes
-        const recetas = await Recetas.findAll();
+  try {
+    console.log('Iniciando migración de lista_precios...');
 
-        // Recorre cada receta y calcula su costo total
-        for (const receta of recetas) {
-            const costoTotal = await calcularCostoTotalReceta(receta.ID_TORTA);
+    const recetas = await Receta.findAll();
 
-            // Verifica si ya existe una entrada en lista_precios para la receta actual
-            const listaPrecioExistente = await ListaPrecios.findOne({
-                where: { ID_TORTA: receta.ID_TORTA },
-            });
+    console.log('Recetas encontradas:', recetas);
 
-            if (listaPrecioExistente) {
-                // Actualiza el costo total de la receta existente
-                await ListaPrecios.update(
-                    { costo_total: costoTotal },
-                    { where: { ID_TORTA: receta.ID_TORTA } }
-                );
-            } else {
-                // Crea una nueva entrada en lista_precios para la receta
-                await ListaPrecios.create({
-                    ID_TORTA: receta.ID_TORTA,
-                    nombre_torta: receta.nombre_torta,
-                    costo_total: costoTotal,
-                });
-            }
-        }
+    for (const receta of recetas) {
+      const costoTotal = await calcularCostoTotalReceta(receta.ID_TORTA);
 
-        console.log('Migración de lista_precios completada');
-    } catch (error) {
-        console.error('Error al migrar los datos de lista_precios:', error);
+      console.log('Costo total calculado para la receta:', costoTotal);
+
+      const listaPrecioExistente = await ListaPrecios.findOne({
+        where: { id_torta: receta.ID_TORTA },
+      });
+
+      if (listaPrecioExistente) {
+        await ListaPrecios.update(
+          { costo_total: costoTotal },
+          { where: { id_torta: receta.ID_TORTA } }
+        );
+
+        console.log('Lista de precios actualizada para la receta:', receta.ID_TORTA);
+      } else {
+        await ListaPrecios.create({
+          id_torta: receta.ID_TORTA,
+          nombre_torta: receta.nombre_torta,
+          costo_total: costoTotal,
+        });
+
+        console.log('Nueva entrada creada en lista_precios para la receta:', receta.ID_TORTA);
+      }
     }
+
+    console.log('Migración de lista_precios completada');
+  } catch (error) {
+    console.error('Error al migrar los datos de lista_precios:', error);
+  }
 };
 
 module.exports = { calcularCostoTotalReceta, actualizarListaPrecios };
+
+
+
 
 
 

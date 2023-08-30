@@ -30,7 +30,8 @@ const Receta = db.define(
   }
 );
 
-Receta.belongsTo(Ingrediente, { foreignKey: 'id_ingrediente' });
-Receta.belongsTo(Torta, { foreignKey: 'id_torta' });
+Receta.belongsTo(Ingrediente, { foreignKey: 'ID_INGREDIENTE' });
+Receta.belongsTo(Torta, { foreignKey: 'ID_TORTA' });
+
 
 module.exports = Receta;

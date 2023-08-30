@@ -1,9 +1,8 @@
 const { Sequelize } = require('sequelize');
 
-// Configura los datos de conexi�n a tu base de datos
 const db = new Sequelize('costoSmart', 'root', 'admin', {
-    host: 'localhost',
-    port: '3307',
+    host: 'database', // Cambiado de la dirección IP a "database"
+    port: '3306',     // Puerto del contenedor MySQL en Docker
     dialect: 'mysql',
 });
 

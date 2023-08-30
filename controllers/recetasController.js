@@ -7,7 +7,7 @@ const { calcularCostoTotalReceta } = require('../services/calculadoraCostos');
 // Controlador para obtener todas las recetas
 exports.obtenerRecetas = (req, res) => {
   Receta.findAll({
-    include: [{ model: Torta }, { model: Ingrediente }],
+    
   })
     .then((recetas) => {
       res.json(recetas);
