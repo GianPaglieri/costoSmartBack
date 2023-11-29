@@ -4,6 +4,9 @@ const tortasController = require('../controllers/tortasController');
 
 // Ruta para obtener todas las tortas
 router.get('/', tortasController.obtenerTortas);
+router.post('/', tortasController.guardarTorta);
+router.put('/:id', tortasController.editarTorta);
+router.delete('/:id', tortasController.eliminarTorta);
 
 
 

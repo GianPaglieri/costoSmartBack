@@ -13,6 +13,11 @@ const Venta = db.define('Venta', {
     allowNull: false,
     field: 'id_torta', // Nombre de la columna en la base de datos
   },
+  precio_torta: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    field: 'precio_torta', // Nombre de la columna en la base de datos
+  },
 }, {
   tableName: 'ventas',
   timestamps: false,

@@ -4,7 +4,7 @@ const ventasController = require('../controllers/ventasController');
 
 router.post('/', ventasController.registrarVenta);
 router.get('/cantidad', ventasController.obtenerCantidadVentas); // Nueva ruta para obtener la cantidad de ventas
-
+router.get('/ganancias', ventasController.obtenerGanancias);
 module.exports = router;
 
 

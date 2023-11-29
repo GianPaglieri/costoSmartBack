@@ -74,9 +74,9 @@ const actualizarListaPrecios = async () => {
       }
     }
 
-    console.log('Migración de lista_precios completada');
+    console.log('ME ??');
   } catch (error) {
-    console.error('Error al migrar los datos de lista_precios:', error);
+    console.error('Error al migrar los datos de lista de precios:', error);
   }
 };
 
