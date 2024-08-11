@@ -2,9 +2,10 @@ const Receta = require('../models/Receta');
 const ListaPrecios = require('../models/ListaPrecios');
 const Ingrediente = require('../models/Ingrediente');
 
+
 const calcularCostoTotalReceta = async (idTorta) => {
   try {
-    console.log('Calculando costo total de la receta...');
+   
 
     const recetas = await Receta.findAll({ where: { ID_TORTA: idTorta } });
 
@@ -22,7 +23,7 @@ const calcularCostoTotalReceta = async (idTorta) => {
         throw new Error(`No se encontró el ingrediente con ID ${ingredienteId}`);
       }
 
-      const cantidad = receta.cantidad || 0;
+      const cantidad = receta.cantidad || 1; // Si no hay cantidad, asumir 1 por defecto
       const tamanoPaquete = ingrediente.tamano_Paquete || 1;
 
       const costoIngrediente = parseFloat(ingrediente.costo);
@@ -31,7 +32,7 @@ const calcularCostoTotalReceta = async (idTorta) => {
       costoTotal += costoPorUnidad * cantidad;
     }
 
-    console.log('Costo total calculado:', costoTotal);
+    
 
     return costoTotal;
   } catch (error) {
@@ -39,18 +40,13 @@ const calcularCostoTotalReceta = async (idTorta) => {
   }
 };
 
-const actualizarListaPrecios = async () => {
+const actualizarListaPrecios = async (nombreTorta, idUsuario) => {
   try {
-    console.log('Iniciando migración de lista_precios...');
-
+    
     const recetas = await Receta.findAll();
-
-    console.log('Recetas encontradas:', recetas);
 
     for (const receta of recetas) {
       const costoTotal = await calcularCostoTotalReceta(receta.ID_TORTA);
-
-      console.log('Costo total calculado para la receta:', costoTotal);
 
       const listaPrecioExistente = await ListaPrecios.findOne({
         where: { id_torta: receta.ID_TORTA },
@@ -61,30 +57,20 @@ const actualizarListaPrecios = async () => {
           { costo_total: costoTotal },
           { where: { id_torta: receta.ID_TORTA } }
         );
-
-        console.log('Lista de precios actualizada para la receta:', receta.ID_TORTA);
       } else {
         await ListaPrecios.create({
           id_torta: receta.ID_TORTA,
-          nombre_torta: receta.nombre_torta,
+          nombre_torta: nombreTorta,
           costo_total: costoTotal,
+          id_usuario: idUsuario
         });
 
         console.log('Nueva entrada creada en lista_precios para la receta:', receta.ID_TORTA);
       }
     }
-
-    console.log('ME ??');
   } catch (error) {
     console.error('Error al migrar los datos de lista de precios:', error);
   }
 };
 
 module.exports = { calcularCostoTotalReceta, actualizarListaPrecios };
-
-
-
-
-
-
-

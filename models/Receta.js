@@ -2,6 +2,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 const db = require('../database/connection');
 const Ingrediente = require('./Ingrediente');
 const Torta = require('./Torta');
+const Usuario = require('./User');
 
 const Receta = db.define(
   'Receta',
@@ -13,12 +14,20 @@ const Receta = db.define(
     },
     ID_INGREDIENTE: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     cantidad: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    id_usuario: { // Agrega la columna id_usuario
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Usuario, // Modelo de la entidad Usuario
+        key: 'ID' // La columna de referencia en la tabla Usuario (ajusta esto según tu estructura de base de datos)
+      }
+    }
   },
   {
     tableName: 'recetas',
@@ -26,7 +35,7 @@ const Receta = db.define(
   }
 );
 
-Receta.belongsTo(Ingrediente, { foreignKey: 'ID_INGREDIENTE' });
+Receta.belongsTo(Ingrediente, { foreignKey: 'ID_INGREDIENTE'});
 Receta.belongsTo(Torta, { foreignKey: 'ID_TORTA' });
-
 module.exports = Receta;
+

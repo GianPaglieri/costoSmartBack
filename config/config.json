@@ -1,0 +1,10 @@
+{
+  
+  "production": {
+    "username": "admin",
+    "password": "Febrero2020",
+    "database": "costoSmart",
+    "host": "database-1.cnkomco8m71y.us-east-2.rds.amazonaws.com",
+    "dialect": "mysql"
+  }
+}

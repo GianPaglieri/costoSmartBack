@@ -32,8 +32,7 @@ const actualizarStockIngredientes = async (idTorta) => {
       const ingredienteActualizado = await Ingrediente.findByPk(idIngrediente);
       const cantidadActualDespues = ingredienteActualizado.CantidadStock;
 
-      console.log(`Stock del ingrediente con ID ${idIngrediente} antes de la venta: ${cantidadActualAntes}`);
-      console.log(`Stock del ingrediente con ID ${idIngrediente} después de la venta: ${cantidadActualDespues}`);
+    
     }
 
     console.log('Stock de ingredientes actualizado correctamente');
