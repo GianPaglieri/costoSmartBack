@@ -124,7 +124,7 @@ exports.eliminarAsignacion = async (req, res) => {
 
     // Verificar y decodificar el token
     const decoded = jwt.verify(token, 'secreto');
-    console.log('Token decoded:', decoded);
+   
 
     // Obtener el ID de usuario del token decodificado
     const userId = decoded.userId;
@@ -164,89 +164,118 @@ exports.crearOEditarReceta = async (req, res) => {
   const { ID_TORTA, ID_INGREDIENTE } = req.params;
   const { total_cantidad } = req.body;
 
-  // Verificar si el token existe en las cabeceras de la solicitud
+  // Verificación del token (mantener igual)
   if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Token de autenticación no proporcionado' });
   }
 
-  // Extraer el token de las cabeceras de la solicitud
   const token = req.headers.authorization.split(' ')[1];
-
-  // Verificar y decodificar el token
   const decoded = jwt.verify(token, 'secreto');
-
-  // Obtener el ID de usuario del token decodificado
   const userId = decoded.userId;
 
-  console.log('Datos recibidos:', { ID_TORTA, ID_INGREDIENTE, total_cantidad, userId });
+  console.log('[DEBUG] Recibida solicitud para:', { 
+    ID_TORTA, 
+    ID_INGREDIENTE, 
+    total_cantidad,
+    userId,
+    timestamp: new Date().toISOString()
+  });
 
   try {
-    if (!ID_TORTA || !ID_INGREDIENTE || !total_cantidad) {
-      return res.status(400).json({ success: false, error: 'Faltan datos de la receta' });
+    // Validación de datos
+    if (!ID_TORTA || !ID_INGREDIENTE || total_cantidad === undefined) {
+      console.error('[ERROR] Faltan datos requeridos');
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Faltan datos de la receta' 
+      });
     }
 
-    // Verificar si existe la receta
-    let recetaExistente = await Receta.findOne({
+    // Buscar relación existente con bloqueo para evitar condiciones de carrera
+    const recetaExistente = await Receta.findOne({
       where: {
         ID_TORTA,
         ID_INGREDIENTE,
-        id_usuario: userId // Aquí se incluye el ID de usuario
+        id_usuario: userId
+      },
+      lock: true // Bloquea el registro durante la transacción
+    });
+
+    // Si existe y la cantidad es diferente, actualizar
+    if (recetaExistente) {
+      if (parseFloat(recetaExistente.cantidad) !== parseFloat(total_cantidad)) {
+        console.log('[DEBUG] Actualizando cantidad existente:', {
+          viejaCantidad: recetaExistente.cantidad,
+          nuevaCantidad: total_cantidad
+        });
+
+        await Receta.update(
+          { cantidad: total_cantidad },
+          {
+            where: {
+              ID_TORTA,
+              ID_INGREDIENTE,
+              id_usuario: userId
+            }
+          }
+        );
+      } else {
+        console.log('[DEBUG] Cantidad sin cambios, omitiendo actualización');
+        return res.json({
+          success: true,
+          mensaje: 'Cantidad sin cambios',
+          receta: recetaExistente
+        });
+      }
+    } else {
+      // Crear nueva relación
+      console.log('[DEBUG] Creando nueva relación receta-ingrediente');
+      await Receta.create({ 
+        ID_TORTA, 
+        ID_INGREDIENTE, 
+        cantidad: total_cantidad, 
+        id_usuario: userId 
+      });
+    }
+
+    // Actualizaciones posteriores (optimizadas)
+    console.log('[DEBUG] Actualizando costos y precios...');
+    await Promise.all([
+      calcularCostoTotalReceta(ID_TORTA),
+      actualizarListaPrecios()
+    ]);
+
+    const recetaActualizada = await Receta.findOne({
+      where: {
+        ID_TORTA,
+        ID_INGREDIENTE,
+        id_usuario: userId
       }
     });
 
-    if (recetaExistente) {
-      // Si existe la receta, actualizar cantidad
-      await Receta.update(
-        { cantidad: total_cantidad },
-        {
-          where: {
-            ID_TORTA,
-            ID_INGREDIENTE,
-            id_usuario: userId // Aquí se incluye el ID de usuario
-          }
-        }
-      );
+    console.log('[DEBUG] Operación completada exitosamente');
+    return res.json({
+      success: true,
+      mensaje: 'Operación completada exitosamente',
+      receta: recetaActualizada || { ID_TORTA, ID_INGREDIENTE, cantidad: total_cantidad }
+    });
 
-      recetaExistente = await Receta.findOne({
-        where: {
-          ID_TORTA,
-          ID_INGREDIENTE,
-          id_usuario: userId // Aquí se incluye el ID de usuario
-        }
-      });
-
-      // Calcular y actualizar el costo total de la receta
-      await calcularCostoTotalReceta(ID_TORTA);
-      await actualizarListaPrecios();
-
-      return res.json({
-        success: true,
-        mensaje: 'Receta actualizada exitosamente',
-        receta: recetaExistente
-      });
-    } else {
-      // Si no existe la receta, crear una nueva
-      await Receta.create({ ID_TORTA, ID_INGREDIENTE, cantidad: total_cantidad, id_usuario: userId });
-
-      // Calcular y actualizar el costo total de la receta
-      await calcularCostoTotalReceta(ID_TORTA);
-      await actualizarListaPrecios();
-
-      return res.json({
-        success: true,
-        mensaje: 'Receta creada exitosamente',
-        receta: { ID_TORTA, ID_INGREDIENTE, cantidad: total_cantidad }
-      });
-    }
   } catch (error) {
-    console.error('Error al crear o editar la receta:', error);
-    return res.status(500).json({ success: false, error: 'Error al crear o editar la receta' });
+    console.error('[ERROR] Error en crearOEditarReceta:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Error al procesar la receta' 
+    });
   }
 };
 
 exports.eliminarReceta = async (req, res) => {
   try {
-    console.log('Headers:', req.headers);
+   
 
     // Verificar si el token existe en las cabeceras de la solicitud
     if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
@@ -255,11 +284,11 @@ exports.eliminarReceta = async (req, res) => {
 
     // Extraer el token de las cabeceras de la solicitud
     const token = req.headers.authorization.split(' ')[1];
-    console.log('Token:', token);
+   
 
     // Verificar y decodificar el token
     const decoded = jwt.verify(token, 'secreto');
-    console.log('Token decoded:', decoded);
+  
 
     // Obtener el ID de usuario del token decodificado
     const userId = decoded.userId;

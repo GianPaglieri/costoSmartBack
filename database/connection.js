@@ -1,10 +1,12 @@
 const { Sequelize } = require('sequelize');
 
-const db = new Sequelize('costoSmart', 'root', 'admin', {
+const db = new Sequelize('costoSmart', 'root', '',
+    
+    {
     logging: console.log, // Habilita la depuración de Sequelize
     
-    host: 'localhost', // Cambiado de la dirección IP a "database" localhost
-    port: '3307',     // Puerto del contenedor MySQL en Docker 3306
+    host: 'vps-4715369-x.dattaweb.com', // Cambiado de la dirección IP a "database" localhost
+    port: '5765',     // Puerto del contenedor MySQL en Docker 3306
     dialect: 'mysql',
 });
 

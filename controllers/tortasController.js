@@ -44,17 +44,17 @@ exports.obtenerTortas = async (req, res) => {
 exports.agregarTorta = async (tortaData) => {
   try {
     const formData = new FormData();
+
+    // 1. Agregar campos básicos
     formData.append('nombre_torta', tortaData.nombre_torta);
     formData.append('descripcion_torta', tortaData.descripcion_torta);
 
+    // 2. Manejar imagen correctamente
     if (tortaData.imagen) {
-      const uriParts = tortaData.imagen.split('.');
-      const fileType = uriParts[uriParts.length - 1];
-
       formData.append('imagen', {
         uri: tortaData.imagen,
-        name: `imagen.${fileType}`,
-        type: `image/${fileType}`,
+        name: `imagen_${Date.now()}.jpg`, // Nombre único
+        type: 'image/jpeg' // Siempre usar JPEG para consistencia
       });
     }
 
@@ -169,39 +169,43 @@ exports.editarTorta = async (req, res) => {
   console.log('Imagen Local Path:', imagenLocalPath);
 
   try {
-    // Verifica si se subió una nueva imagen antes de actualizar
+    // Actualizar la torta
     if (req.file) {
       await Torta.update(
         {
           nombre_torta,
           descripcion_torta,
-          imagen: `uploads\${imagenLocalPath}`, // Guardar la ruta relativa en la base de datos
+          imagen: `uploads/${req.file.filename}`
         },
-        {
-          where: { ID_TORTA: id },
-        }
+        { where: { ID_TORTA: id } }
       );
     } else {
-      // No hay nueva imagen, actualiza solo nombre y descripción
       await Torta.update(
         {
           nombre_torta,
           descripcion_torta,
         },
-        {
-          where: { ID_TORTA: id },
-        }
+        { where: { ID_TORTA: id } }
       );
     }
+    console.log('NUEVA ARQ ')
+    // ✅ También actualizar el nombre en la ListaPrecios
+    await ListaPrecios.update(
+      {
+        
+        nombre_torta,
+        imagen_torta: req.file ? `uploads/${req.file.filename}` : undefined,
+      },
+      { where: { id_torta: id } }
+    );
 
-    console.log('Torta editada exitosamente');
+    console.log('Torta y lista de precios actualizadas exitosamente ');
     res.json({ success: true });
   } catch (error) {
     console.error('Error al editar la torta:', error);
     res.status(500).json({ error: 'Error al editar la torta' });
   }
 };
-
 // Controlador para eliminar una torta
 exports.eliminarTorta = async (req, res) => {
   const { id } = req.params;

@@ -11,4 +11,3 @@ router.get('/ganancias', ventasController.obtenerGanancias);
 module.exports = router;
 
 
-
