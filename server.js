@@ -59,7 +59,7 @@ app.use('/recetas', recetasRoutes);
 app.use('/lista_precios', listaPreciosRoutes);
 
 // Ruta para subir imágenes
-app.post('/recetas', upload.single('imagen'), guardarReceta);
+//app.post('/recetas', upload.single('imagen'), guardarReceta);
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

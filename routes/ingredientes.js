@@ -1,24 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const ingredientesController = require('../controllers/ingredientesController');
-const listaPreciosController = require('../controllers/listaPreciosController');
+const ingredienteController = require('../controllers/ingredienteController');
 
+// Obtener todos los ingredientes
+router.get('/', ingredienteController.obtenerIngredientes);
 
+// Obtener ingredientes con menos stock
+router.get('/menosstock', ingredienteController.obtenerIngredientesMenosStock);
 
-// Rutas para los ingredientes
-router.get('/', ingredientesController.obtenerIngredientes);
-// Ruta para obtener los 5 ingredientes con menos stock
-router.get('/menosstock', ingredientesController.obtenerIngredientesMenosStock);
+// Crear nuevo ingrediente
+router.post('/', ingredienteController.guardarIngrediente);
 
-router.post('/', ingredientesController.guardarIngrediente);
-router.put('/:id', ingredientesController.editarIngrediente);
-router.delete('/:id', ingredientesController.eliminarIngrediente);
+// Editar ingrediente
+router.put('/:id', ingredienteController.editarIngrediente);
 
-
-// Ruta para actualizar el costo total de una receta
-router.put('/recetas/:idTorta/actualizar-costototal', listaPreciosController.actualizarCostoTotalReceta);
-router.get('/menosstock', ingredientesController.obtenerIngredientesMenosStock);
+// Eliminar ingrediente
+router.delete('/:id', ingredienteController.eliminarIngrediente);
 
 module.exports = router;
-
-
