@@ -18,8 +18,8 @@ exports.crearTorta = async ({ nombre_torta, descripcion_torta, imagen, userId })
     id_usuario: userId
   });
 
-  // Crear receta automática
-  await crearRecetaAutomatica(tortaNueva.ID_TORTA, userId, nombre_torta);
+  // Crear receta automática con Packaging
+  await crearRecetaAutomatica(tortaNueva.ID_TORTA, userId);
 
   // Calcular costo de receta automática
   const costoRecetaAutomatica = await calcularCostoTotalReceta(tortaNueva.ID_TORTA);

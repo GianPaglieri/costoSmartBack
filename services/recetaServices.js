@@ -104,3 +104,28 @@ exports.eliminarReceta = async ({ ID_TORTA, userId }) => {
   await receta.destroy();
   await actualizarListaPrecios();
 };
+
+// Crear receta automática con el ingrediente "Packaging"
+exports.crearRecetaAutomatica = async (idTorta, userId) => {
+  let packaging = await Ingrediente.findOne({
+    where: { nombre: 'Packaging', id_usuario: userId }
+  });
+
+  if (!packaging) {
+    packaging = await Ingrediente.create({
+      nombre: 'Packaging',
+      unidad_Medida: 'unidad',
+      tamano_Paquete: 1,
+      costo: 1000,
+      CantidadStock: 0,
+      id_usuario: userId
+    });
+  }
+
+  await Receta.create({
+    ID_TORTA: idTorta,
+    ID_INGREDIENTE: packaging.id,
+    cantidad: 1,
+    id_usuario: userId
+  });
+};

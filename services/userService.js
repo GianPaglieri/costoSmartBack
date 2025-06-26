@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Ingrediente = require('../models/Ingrediente');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
@@ -31,7 +32,18 @@ exports.loginUser = async ({ email, contrasena }) => {
 // Registro
 exports.createUser = async ({ nombre, email, contrasena }) => {
   const hashedPassword = await bcrypt.hash(contrasena, 10);
-  return await User.create({ nombre, email, contrasena: hashedPassword });
+  const user = await User.create({ nombre, email, contrasena: hashedPassword });
+
+  await Ingrediente.create({
+    nombre: 'Packaging',
+    unidad_Medida: 'unidad',
+    tamano_Paquete: 1,
+    costo: 1000,
+    CantidadStock: 0,
+    id_usuario: user.id
+  });
+
+  return user;
 };
 
 // Listado de usuarios

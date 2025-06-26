@@ -1,6 +1,6 @@
 // controllers/recetaController.js
 
-const recetaService = require('../services/recetaService');
+const recetaService = require('../services/recetaServices');
 const { obtenerUserIdDesdeRequest } = require('../middlewares/authMiddleware');
 
 exports.obtenerRecetas = async (req, res) => {
@@ -68,5 +68,14 @@ exports.eliminarReceta = async (req, res) => {
     res.json({ message: 'Receta eliminada exitosamente' });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+// Creación automática de receta con ingrediente Packaging
+exports.crearRecetaAutomatica = async (idTorta, userId) => {
+  try {
+    await recetaService.crearRecetaAutomatica(idTorta, userId);
+  } catch (error) {
+    throw new Error(error.message);
   }
 };
