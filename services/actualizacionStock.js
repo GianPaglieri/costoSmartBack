@@ -4,7 +4,7 @@ const Receta = require('../models/Receta');
 const actualizarStockIngredientes = async (idTorta, userId) => {
   try {
     const recetas = await Receta.findAll({
-      where: { id_torta: idTorta, id_usuario: userId }
+      where: { ID_TORTA: idTorta, id_usuario: userId }
     });
 
     if (!recetas || recetas.length === 0) {
