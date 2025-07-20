@@ -23,13 +23,16 @@ db.authenticate()
 
 
 
+// Leer origen permitido desde variable de entorno, por defecto abierto
+const corsOrigin = process.env.CORS_ORIGIN || '*';
+
 const corsOptions = {
-    origin: '*', // <- PERMITE TODOS
+    origin: corsOrigin,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   };
 
-  app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // <-- NECESARIO para solicitudes preflight
 
 
@@ -65,7 +68,7 @@ app.use('/lista_precios', listaPreciosRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Puerto del servidor
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
