@@ -32,10 +32,14 @@ exports.obtenerVentas = async (userId) => {
 exports.registrarVenta = async ({ id_torta, userId }) => {
   if (!id_torta) throw new Error('El campo id_torta es requerido');
 
-  const precioTortaData = await ListaPrecios.findOne({ where: { id_torta } });
+  const precioTortaData = await ListaPrecios.findOne({
+    where: { id_torta, id_usuario: userId }
+  });
   if (!precioTortaData) throw new Error('No se encontró el precio de la torta en lista_precios');
 
-  const receta = await Receta.findOne({ where: { ID_TORTA: id_torta } });
+  const receta = await Receta.findOne({
+    where: { ID_TORTA: id_torta, id_usuario: userId }
+  });
   if (!receta) throw new Error('No se encontró la receta');
 
   const ingredientesSuficientes = await verificarStockIngredientes(id_torta, userId);
@@ -54,11 +58,15 @@ exports.registrarVenta = async ({ id_torta, userId }) => {
 
 // Verificación de stock antes de vender
 const verificarStockIngredientes = async (idTorta, userId) => {
-  const recetas = await Receta.findAll({ where: { id_torta: idTorta, id_usuario: userId } });
+  const recetas = await Receta.findAll({
+    where: { id_torta: idTorta, id_usuario: userId }
+  });
   if (!recetas || recetas.length === 0) throw new Error('No se encontraron recetas para la torta');
 
   for (const receta of recetas) {
-    const ingrediente = await Ingrediente.findByPk(receta.ID_INGREDIENTE);
+    const ingrediente = await Ingrediente.findOne({
+      where: { id: receta.ID_INGREDIENTE, id_usuario: userId }
+    });
     if (!ingrediente) throw new Error('No se encontró el ingrediente');
     if (ingrediente.CantidadStock < receta.cantidad) return false;
   }

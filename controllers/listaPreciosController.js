@@ -21,14 +21,16 @@ exports.actualizarCostoTotalReceta = async (req, res) => {
     const userId = obtenerUserId(req);
     console.log('ID de usuario obtenido del token:', userId);
 
-    const receta = await Receta.findOne({ where: { id_torta: idTorta } });
+    const receta = await Receta.findOne({
+      where: { id_torta: idTorta, id_usuario: userId }
+    });
     console.log('Receta encontrada:', receta);
 
     if (!receta) {
       throw new Error('No se encontró la receta');
     }
 
-    const costoTotal = await calcularCostoTotalReceta(idTorta);
+    const costoTotal = await calcularCostoTotalReceta(idTorta, userId);
     console.log('Costo total calculado:', costoTotal);
     console.log('Datos a guardar en ListaPrecios:', {
       id_torta: receta.id_torta,

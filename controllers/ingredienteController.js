@@ -29,7 +29,17 @@ exports.editarIngrediente = async (req, res) => {
     const { id } = req.params;
     const { nombre, unidad_Medida, tamano_Paquete, costo, CantidadStock } = req.body;
 
-    await ingredienteService.editarIngrediente({ id, nombre, unidad_Medida, tamano_Paquete, costo, CantidadStock });
+    const userId = obtenerUserIdDesdeRequest(req);
+
+    await ingredienteService.editarIngrediente({
+      id,
+      nombre,
+      unidad_Medida,
+      tamano_Paquete,
+      costo,
+      CantidadStock,
+      userId
+    });
 
     res.json({ success: true });
   } catch (error) {

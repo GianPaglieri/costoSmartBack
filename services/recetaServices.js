@@ -63,8 +63,8 @@ exports.crearOEditarReceta = async ({ ID_TORTA, ID_INGREDIENTE, total_cantidad, 
   }
 
   await Promise.all([
-    calcularCostoTotalReceta(ID_TORTA),
-    actualizarListaPrecios()
+    calcularCostoTotalReceta(ID_TORTA, userId),
+    actualizarListaPrecios(null, userId)
   ]);
 };
 
@@ -77,8 +77,8 @@ exports.agregarRelacion = async ({ ID_TORTA, ID_INGREDIENTE, cantidad, userId })
     id_usuario: userId
   });
 
-  await calcularCostoTotalReceta(ID_TORTA);
-  await actualizarListaPrecios();
+  await calcularCostoTotalReceta(ID_TORTA, userId);
+  await actualizarListaPrecios(null, userId);
 };
 
 // Eliminar asignación de un ingrediente de una torta
@@ -87,7 +87,7 @@ exports.eliminarAsignacion = async ({ ID_TORTA, ID_INGREDIENTE, userId }) => {
     where: { ID_TORTA, ID_INGREDIENTE, id_usuario: userId }
   });
 
-  await actualizarListaPrecios();
+  await actualizarListaPrecios(null, userId);
 
   if (result === 0) {
     throw new Error('Asignación de receta no encontrada');
@@ -102,7 +102,7 @@ exports.eliminarReceta = async ({ ID_TORTA, userId }) => {
   }
 
   await receta.destroy();
-  await actualizarListaPrecios();
+  await actualizarListaPrecios(null, userId);
 };
 
 // Crear receta automática con el ingrediente "Packaging"
