@@ -8,7 +8,7 @@ const secretKey = process.env.JWT_SECRET;
 
 exports.loginUser = async (req, res) => {
   const { email, contrasena } = req.body;
-  console.log('Intentando iniciar sesión con:', req.body);
+  // console.log('Intentando iniciar sesión con:', req.body);
 
   if (!email || !contrasena) {
     return res.status(400).json({ error: 'Faltan campos requeridos para iniciar sesión' });

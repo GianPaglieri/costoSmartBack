@@ -19,25 +19,25 @@ exports.actualizarCostoTotalReceta = async (req, res) => {
   try {
     const { idTorta } = req.body;
     const userId = obtenerUserId(req);
-    console.log('ID de usuario obtenido del token:', userId);
+    // console.log('ID de usuario obtenido del token:', userId);
 
     const receta = await Receta.findOne({
       where: { id_torta: idTorta, id_usuario: userId }
     });
-    console.log('Receta encontrada:', receta);
+    // console.log('Receta encontrada:', receta);
 
     if (!receta) {
       throw new Error('No se encontró la receta');
     }
 
     const costoTotal = await calcularCostoTotalReceta(idTorta, userId);
-    console.log('Costo total calculado:', costoTotal);
-    console.log('Datos a guardar en ListaPrecios:', {
+    // console.log('Costo total calculado:', costoTotal);
+    /* console.log('Datos a guardar en ListaPrecios:', {
       id_torta: receta.id_torta,
       nombre_torta: receta.nombre_torta,
       costo_total: costoTotal,
       id_usuario: userId
-    });
+    }); */
 
     const result = await ListaPrecios.upsert({
       id_torta: receta.id_torta,
@@ -45,7 +45,7 @@ exports.actualizarCostoTotalReceta = async (req, res) => {
       costo_total: costoTotal,
       id_usuario: userId
     });
-    console.log('Resultado de upsert en ListaPrecios:', result);
+    // console.log('Resultado de upsert en ListaPrecios:', result);
 
     res.status(200).json({ message: 'Costo total de la receta actualizado correctamente' });
   } catch (error) {
@@ -57,7 +57,7 @@ exports.actualizarCostoTotalReceta = async (req, res) => {
 exports.obtenerListaPreciosConImagen = async (req, res) => {
   try {
     const userId = obtenerUserId(req);
-    console.log('Datos del usuario autenticado:', userId);
+    // console.log('Datos del usuario autenticado:', userId);
 
     const listaPrecios = await ListaPrecios.findAll({ where: { id_usuario: userId } });
 

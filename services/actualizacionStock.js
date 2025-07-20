@@ -44,7 +44,7 @@ const actualizarStockIngredientes = async (idTorta, userId) => {
     
     }
 
-    console.log('Stock de ingredientes actualizado correctamente');
+  // console.log('Stock de ingredientes actualizado correctamente');
   } catch (error) {
     console.error('Error al actualizar el stock de ingredientes:', error);
     throw error;
