@@ -1,5 +1,5 @@
 const ingredienteService = require('../services/ingredienteService');
-const { obtenerUserIdDesdeRequest } = require('../middlewares/authMiddleware');
+const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 exports.obtenerIngredientes = async (req, res) => {
   try {

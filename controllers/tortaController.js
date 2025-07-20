@@ -1,7 +1,7 @@
 // controllers/tortaController.js
 
 const tortaService = require('../services/tortaService');
-const { obtenerUserIdDesdeRequest } = require('../middlewares/authMiddleware');
+const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 exports.crearTorta = async (req, res) => {
   try {

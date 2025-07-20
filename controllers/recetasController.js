@@ -1,7 +1,7 @@
 // controllers/recetaController.js
 
 const recetaService = require('../services/recetaServices');
-const { obtenerUserIdDesdeRequest } = require('../middlewares/authMiddleware');
+const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 exports.obtenerRecetas = async (req, res) => {
   try {

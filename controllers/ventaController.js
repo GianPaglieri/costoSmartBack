@@ -1,5 +1,5 @@
 const ventaService = require('../services/ventaService');
-const { obtenerUserIdDesdeRequest } = require('../middlewares/authMiddleware');
+const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 // Obtener rango de fechas
 const getLast7DaysRange = () => {
