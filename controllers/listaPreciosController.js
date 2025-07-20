@@ -3,7 +3,21 @@ const ListaPrecios = require('../models/ListaPrecios');
 const Receta = require('../models/Receta');
 const Torta = require('../models/Torta');
 const Ingrediente = require('../models/Ingrediente');
+
+const { calcularCostoTotalReceta } = require('../services/calculadoraCostos');
 const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
+const jwt = require('jsonwebtoken');
+
+const obtenerUserId = (req) => {
+  if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
+    throw new Error('Token de autenticación no proporcionado');
+  }
+
+  const token = req.headers.authorization.split(' ')[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  return decoded.userId;
+};
+
 
 exports.actualizarCostoTotalReceta = async (req, res) => {
   try {
