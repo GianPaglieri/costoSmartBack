@@ -41,7 +41,8 @@ exports.requestPasswordReset = async (req, res) => {
     await userService.requestPasswordReset(email);
     res.json({ success: true, message: 'Correo enviado' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -53,6 +54,7 @@ exports.resetPassword = async (req, res) => {
     await userService.resetPassword(token, newPassword);
     res.json({ success: true, message: 'Contraseña restablecida' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };

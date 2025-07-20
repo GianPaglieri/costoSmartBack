@@ -15,7 +15,7 @@ exports.crearTorta = async (req, res) => {
     res.json({ success: true, torta });
   } catch (error) {
     console.error('Error al crear la torta:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -26,7 +26,8 @@ exports.obtenerTortas = async (req, res) => {
     const tortas = await tortaService.obtenerTortasPorUsuario(userId);
     res.json(tortas);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -41,7 +42,7 @@ exports.editarTorta = async (req, res) => {
     res.json({ success: true, torta });
   } catch (error) {
     console.error('Error al editar la torta:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -54,6 +55,6 @@ exports.eliminarTorta = async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error al eliminar la torta:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Server error' });
   }
 };

@@ -8,7 +8,8 @@ exports.obtenerIngredientes = async (req, res) => {
     const ingredientes = await ingredienteService.obtenerIngredientes(userId);
     res.json({ success: true, ingredientes });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -22,7 +23,8 @@ exports.guardarIngrediente = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -46,7 +48,8 @@ exports.editarIngrediente = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -57,7 +60,8 @@ exports.obtenerIngredientesMenosStock = async (req, res) => {
     const ingredientes = await ingredienteService.obtenerIngredientesMenosStock(userId);
     res.json(ingredientes);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -71,6 +75,7 @@ exports.eliminarIngrediente = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
