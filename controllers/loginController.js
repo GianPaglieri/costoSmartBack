@@ -1,9 +1,10 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+require('dotenv').config();
 
 // Clave secreta para firmar el token
-const secretKey = 'tu_secreto'; // Reemplaza 'tu_secreto' con tu propia clave secreta
+const secretKey = process.env.JWT_SECRET;
 
 exports.loginUser = async (req, res) => {
   const { email, contrasena } = req.body;
@@ -27,7 +28,7 @@ exports.loginUser = async (req, res) => {
     }
 
     // Genera un token firmado con la clave secreta
-    const token = jwt.sign({ userId: user.id }, 'secreto', { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: '1h' });
 
     res.json({ success: true, token });
   } catch (error) {

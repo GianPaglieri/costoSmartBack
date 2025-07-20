@@ -1,14 +1,17 @@
 const { Sequelize } = require('sequelize');
+require('dotenv').config();
 
-const db = new Sequelize('costoSmart', 'root', '',
-    
-    {
+const db = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASS,
+  {
     logging: console.log, // Habilita la depuración de Sequelize
-    
-    host: 'vps-4715369-x.dattaweb.com', // Cambiado de la dirección IP a "database" localhost
-    port: '5765',     // Puerto del contenedor MySQL en Docker 3306
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
     dialect: 'mysql',
-});
+  }
+);
 
 module.exports = db;
 
