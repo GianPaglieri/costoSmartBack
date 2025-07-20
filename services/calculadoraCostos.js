@@ -3,11 +3,12 @@ const ListaPrecios = require('../models/ListaPrecios');
 const Ingrediente = require('../models/Ingrediente');
 
 
-const calcularCostoTotalReceta = async (idTorta) => {
+const calcularCostoTotalReceta = async (idTorta, userId) => {
   try {
-   
 
-    const recetas = await Receta.findAll({ where: { ID_TORTA: idTorta } });
+    const recetas = await Receta.findAll({
+      where: { ID_TORTA: idTorta, id_usuario: userId }
+    });
 
     if (recetas.length === 0) {
       throw new Error('No se encontró la receta');
@@ -17,7 +18,9 @@ const calcularCostoTotalReceta = async (idTorta) => {
 
     for (const receta of recetas) {
       const ingredienteId = receta.ID_INGREDIENTE;
-      const ingrediente = await Ingrediente.findOne({ where: { id: ingredienteId } });
+      const ingrediente = await Ingrediente.findOne({
+        where: { id: ingredienteId, id_usuario: userId }
+      });
 
       if (!ingrediente) {
         throw new Error(`No se encontró el ingrediente con ID ${ingredienteId}`);
@@ -42,21 +45,21 @@ const calcularCostoTotalReceta = async (idTorta) => {
 
 const actualizarListaPrecios = async (nombreTorta, idUsuario) => {
   try {
-    
-    const recetas = await Receta.findAll();
+
+    const recetas = await Receta.findAll({ where: { id_usuario: idUsuario } });
 
     for (const receta of recetas) {
-      const costoTotal = await calcularCostoTotalReceta(receta.ID_TORTA);
+      const costoTotal = await calcularCostoTotalReceta(receta.ID_TORTA, idUsuario);
 
-      const listaPrecioExistente = await ListaPrecios.findOne({
-        where: { id_torta: receta.ID_TORTA },
-      });
+        const listaPrecioExistente = await ListaPrecios.findOne({
+          where: { id_torta: receta.ID_TORTA, id_usuario: idUsuario },
+        });
 
       if (listaPrecioExistente) {
-        await ListaPrecios.update(
-          { costo_total: costoTotal },
-          { where: { id_torta: receta.ID_TORTA } }
-        );
+          await ListaPrecios.update(
+            { costo_total: costoTotal },
+            { where: { id_torta: receta.ID_TORTA, id_usuario: idUsuario } }
+          );
       } else {
         await ListaPrecios.create({
           id_torta: receta.ID_TORTA,

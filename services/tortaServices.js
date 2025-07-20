@@ -22,11 +22,14 @@ exports.crearTorta = async ({ nombre_torta, descripcion_torta, imagen, userId })
   await crearRecetaAutomatica(tortaNueva.ID_TORTA, userId);
 
   // Calcular costo de receta automática
-  const costoRecetaAutomatica = await calcularCostoTotalReceta(tortaNueva.ID_TORTA);
+  const costoRecetaAutomatica = await calcularCostoTotalReceta(
+    tortaNueva.ID_TORTA,
+    userId
+  );
 
   // Crear o actualizar lista de precios
   const [listaPrecio, created] = await ListaPrecios.findOrCreate({
-    where: { id_torta: tortaNueva.ID_TORTA },
+    where: { id_torta: tortaNueva.ID_TORTA, id_usuario: userId },
     defaults: {
       nombre_torta: tortaNueva.nombre_torta,
       costo_total: costoRecetaAutomatica,
@@ -37,8 +40,8 @@ exports.crearTorta = async ({ nombre_torta, descripcion_torta, imagen, userId })
   if (!created) {
     await ListaPrecios.update(
       { costo_total: costoRecetaAutomatica },
-      { where: { id_torta: tortaNueva.ID_TORTA } }
-    );
+      { where: { id_torta: tortaNueva.ID_TORTA, id_usuario: userId } }
+      );
   }
 
   return tortaNueva;

@@ -23,7 +23,7 @@ exports.guardarIngrediente = async ({ nombre, unidad_Medida, tamano_Paquete, cos
 };
 
 // Editar ingrediente
-exports.editarIngrediente = async ({ id, nombre, unidad_Medida, tamano_Paquete, costo, CantidadStock }) => {
+exports.editarIngrediente = async ({ id, nombre, unidad_Medida, tamano_Paquete, costo, CantidadStock, userId }) => {
   const camposActualizados = {};
   if (nombre) camposActualizados.nombre = nombre;
   if (unidad_Medida) camposActualizados.unidad_Medida = unidad_Medida;
@@ -31,9 +31,9 @@ exports.editarIngrediente = async ({ id, nombre, unidad_Medida, tamano_Paquete, 
   if (costo !== undefined) camposActualizados.costo = costo;
   if (CantidadStock !== undefined) camposActualizados.CantidadStock = CantidadStock;
 
-  await Ingrediente.update(camposActualizados, { where: { id } });
+  await Ingrediente.update(camposActualizados, { where: { id, id_usuario: userId } });
 
-  await actualizarListaPrecios();
+  await actualizarListaPrecios(null, userId);
 };
 
 // Obtener ingredientes con menos stock (TOP 5)
