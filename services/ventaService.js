@@ -59,7 +59,7 @@ exports.registrarVenta = async ({ id_torta, userId }) => {
 // Verificación de stock antes de vender
 const verificarStockIngredientes = async (idTorta, userId) => {
   const recetas = await Receta.findAll({
-    where: { id_torta: idTorta, id_usuario: userId }
+    where: { ID_TORTA: idTorta, id_usuario: userId }
   });
   if (!recetas || recetas.length === 0) throw new Error('No se encontraron recetas para la torta');
 

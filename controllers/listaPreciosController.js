@@ -22,7 +22,7 @@ exports.actualizarCostoTotalReceta = async (req, res) => {
     // console.log('ID de usuario obtenido del token:', userId);
 
     const receta = await Receta.findOne({
-      where: { id_torta: idTorta, id_usuario: userId }
+      where: { ID_TORTA: idTorta, id_usuario: userId }
     });
     // console.log('Receta encontrada:', receta);
 
@@ -33,14 +33,14 @@ exports.actualizarCostoTotalReceta = async (req, res) => {
     const costoTotal = await calcularCostoTotalReceta(idTorta, userId);
     // console.log('Costo total calculado:', costoTotal);
     /* console.log('Datos a guardar en ListaPrecios:', {
-      id_torta: receta.id_torta,
+      id_torta: receta.ID_TORTA,
       nombre_torta: receta.nombre_torta,
       costo_total: costoTotal,
       id_usuario: userId
     }); */
 
     const result = await ListaPrecios.upsert({
-      id_torta: receta.id_torta,
+      id_torta: receta.ID_TORTA,
       nombre_torta: receta.nombre_torta,
       costo_total: costoTotal,
       id_usuario: userId
@@ -65,7 +65,7 @@ exports.obtenerListaPreciosConImagen = async (req, res) => {
     const listaPreciosConImagen = await Promise.all(listaPrecios.map(async (item) => {
       
       
-      const torta = await Torta.findOne({ where: { id_torta: item.id_torta } });
+      const torta = await Torta.findOne({ where: { ID_TORTA: item.id_torta } });
   
       
       return {
