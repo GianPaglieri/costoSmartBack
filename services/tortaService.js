@@ -4,7 +4,7 @@ const Torta = require('../models/Torta');
 const Receta = require('../models/Receta');
 const ListaPrecios = require('../models/ListaPrecios');
 const { calcularCostoTotalReceta, actualizarListaPrecios } = require('../services/calculadoraCostos');
-const recetaService = require('../services/recetaService'); 
+const recetaService = require('../services/recetaServices');
 
 
 exports.crearTorta = async ({ nombre_torta, descripcion_torta, imagen, userId }) => {
@@ -20,7 +20,7 @@ exports.crearTorta = async ({ nombre_torta, descripcion_torta, imagen, userId })
   });
 
     // Crear receta automática al crear la torta
-  await recetaService.crearRecetaAutomatica(tortaNueva.ID_TORTA, userId, nombre_torta);
+  await recetaService.crearRecetaAutomatica(tortaNueva.ID_TORTA, userId);
 
   // Calcular costo total luego de tener receta base
   const costoRecetaAutomatica = await calcularCostoTotalReceta(
