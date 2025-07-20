@@ -20,7 +20,8 @@ const getLast7DaysRange = () => {
 
 exports.obtenerVentas = async (req, res) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     const ventas = await ventaService.obtenerVentas(userId);
     res.json(ventas);
   } catch (error) {
@@ -30,7 +31,8 @@ exports.obtenerVentas = async (req, res) => {
 
 exports.registrarVenta = async (req, res) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     const { id_torta } = req.body;
 
     const venta = await ventaService.registrarVenta({ id_torta, userId });
@@ -42,7 +44,8 @@ exports.registrarVenta = async (req, res) => {
 
 exports.obtenerCantidadVentas = async (req, res) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     const cantidad = await ventaService.obtenerCantidadVentas(userId);
     res.json({ cantidadVentas: cantidad });
   } catch (error) {
@@ -52,7 +55,8 @@ exports.obtenerCantidadVentas = async (req, res) => {
 
 exports.obtenerCantidadVentasSemana = async (req, res) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     const { current } = getLast7DaysRange();
     const cantidad = await ventaService.obtenerCantidadVentasSemana(userId, current);
     res.json({ cantidadVentas: cantidad });
@@ -63,7 +67,8 @@ exports.obtenerCantidadVentasSemana = async (req, res) => {
 
 exports.obtenerGanancias = async (req, res) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     const ganancias = await ventaService.obtenerGanancias(userId);
     res.json({ ganancias });
   } catch (error) {
@@ -73,7 +78,8 @@ exports.obtenerGanancias = async (req, res) => {
 
 exports.obtenerPorcentajeVentas = async (req, res) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     const { current, last } = getLast7DaysRange();
     const datos = await ventaService.obtenerPorcentajeVentas(userId, current, last);
 

@@ -5,7 +5,8 @@ const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 exports.crearTorta = async (req, res) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     const { nombre_torta, descripcion_torta } = req.body;
     const imagen = req.file ? `uploads/${req.file.filename}` : null;
 
@@ -20,7 +21,8 @@ exports.crearTorta = async (req, res) => {
 
 exports.obtenerTortas = async (req, res) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     const tortas = await tortaService.obtenerTortasPorUsuario(userId);
     res.json(tortas);
   } catch (error) {
