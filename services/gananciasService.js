@@ -9,10 +9,10 @@ const calcularGanancias = async (userId) => {
   try {
     
     const resultado = await Venta.sum('precio_torta', { where: { id_usuario: userId } });
-    console.log('Iniciando cálculo de ganancias para el usuario con ID:', userId);
+    // console.log('Iniciando cálculo de ganancias para el usuario con ID:', userId);
 
     const ganancias = resultado || 0; 
-    console.log('Ganancias calculadas para el usuario:', ganancias);
+    // console.log('Ganancias calculadas para el usuario:', ganancias);
 
     return ganancias;
   } catch (error) {

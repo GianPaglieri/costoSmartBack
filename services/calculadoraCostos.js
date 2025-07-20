@@ -68,7 +68,7 @@ const actualizarListaPrecios = async (nombreTorta, idUsuario) => {
           id_usuario: idUsuario
         });
 
-        console.log('Nueva entrada creada en lista_precios para la receta:', receta.ID_TORTA);
+        // console.log('Nueva entrada creada en lista_precios para la receta:', receta.ID_TORTA);
       }
     }
   } catch (error) {

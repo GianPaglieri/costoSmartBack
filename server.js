@@ -11,7 +11,7 @@ const { guardarReceta } = require('./controllers/recetasController');
 // Conexión a la base de datos
 db.authenticate()
   .then(() => {
-    console.log('Conexión exitosa a la base de datos');
+    // console.log('Conexión exitosa a la base de datos');
   })
   .catch((error) => {
     console.error('Error al conectar a la base de datos:', error);
@@ -71,6 +71,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en el puerto ${PORT}`);
-  console.log(`CORS abierto: cualquier origen permitido (modo desarrollo)`);
+  // console.log(`Servidor corriendo en el puerto ${PORT}`);
+  // console.log(`CORS abierto: cualquier origen permitido (modo desarrollo)`);
 });
