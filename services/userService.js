@@ -5,8 +5,8 @@ const Ingrediente = require('../models/Ingrediente');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-const SECRET_KEY = process.env.SECRET_KEY;
-const RESET_SECRET_KEY = process.env.RESET_SECRET_KEY || SECRET_KEY;
+const JWT_SECRET = process.env.JWT_SECRET;
+const RESET_SECRET_KEY = process.env.RESET_SECRET_KEY || JWT_SECRET;
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -25,7 +25,7 @@ exports.loginUser = async ({ email, contrasena }) => {
   const isMatch = await bcrypt.compare(contrasena, user.contrasena);
   if (!isMatch) throw new Error('Credenciales inválidas');
 
-  const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: '1h' });
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
   return token;
 };
 
