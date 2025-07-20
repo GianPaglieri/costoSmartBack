@@ -3,22 +3,13 @@ const ListaPrecios = require('../models/ListaPrecios');
 const Receta = require('../models/Receta');
 const Torta = require('../models/Torta');
 const Ingrediente = require('../models/Ingrediente');
-const jwt = require('jsonwebtoken');
-
-const obtenerUserId = (req) => {
-  if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
-    throw new Error('Token de autenticación no proporcionado');
-  }
-
-  const token = req.headers.authorization.split(' ')[1];
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  return decoded.userId;
-};
+const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 exports.actualizarCostoTotalReceta = async (req, res) => {
   try {
     const { idTorta } = req.body;
-    const userId = obtenerUserId(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     // console.log('ID de usuario obtenido del token:', userId);
 
     const receta = await Receta.findOne({
@@ -56,7 +47,8 @@ exports.actualizarCostoTotalReceta = async (req, res) => {
 
 exports.obtenerListaPreciosConImagen = async (req, res) => {
   try {
-    const userId = obtenerUserId(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     // console.log('Datos del usuario autenticado:', userId);
 
     const listaPrecios = await ListaPrecios.findAll({ where: { id_usuario: userId } });
