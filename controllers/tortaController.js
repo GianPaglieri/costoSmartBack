@@ -5,7 +5,8 @@ const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 exports.crearTorta = async (req, res) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     const { nombre_torta, descripcion_torta } = req.body;
     const imagen = req.file ? `uploads/${req.file.filename}` : null;
 
@@ -14,17 +15,19 @@ exports.crearTorta = async (req, res) => {
     res.json({ success: true, torta });
   } catch (error) {
     console.error('Error al crear la torta:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
 exports.obtenerTortas = async (req, res) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     const tortas = await tortaService.obtenerTortasPorUsuario(userId);
     res.json(tortas);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -39,7 +42,7 @@ exports.editarTorta = async (req, res) => {
     res.json({ success: true, torta });
   } catch (error) {
     console.error('Error al editar la torta:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -52,6 +55,6 @@ exports.eliminarTorta = async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error al eliminar la torta:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Server error' });
   }
 };

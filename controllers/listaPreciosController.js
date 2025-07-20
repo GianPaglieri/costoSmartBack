@@ -3,7 +3,9 @@ const ListaPrecios = require('../models/ListaPrecios');
 const Receta = require('../models/Receta');
 const Torta = require('../models/Torta');
 const Ingrediente = require('../models/Ingrediente');
+
 const { calcularCostoTotalReceta } = require('../services/calculadoraCostos');
+const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 const jwt = require('jsonwebtoken');
 
 const obtenerUserId = (req) => {
@@ -16,10 +18,12 @@ const obtenerUserId = (req) => {
   return decoded.userId;
 };
 
+
 exports.actualizarCostoTotalReceta = async (req, res) => {
   try {
     const { idTorta } = req.body;
-    const userId = obtenerUserId(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     // console.log('ID de usuario obtenido del token:', userId);
 
     const receta = await Receta.findOne({
@@ -57,7 +61,8 @@ exports.actualizarCostoTotalReceta = async (req, res) => {
 
 exports.obtenerListaPreciosConImagen = async (req, res) => {
   try {
-    const userId = obtenerUserId(req);
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
     // console.log('Datos del usuario autenticado:', userId);
 
     const listaPrecios = await ListaPrecios.findAll({ where: { id_usuario: userId } });
