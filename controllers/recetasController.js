@@ -9,7 +9,7 @@ exports.obtenerRecetas = async (req, res) => {
     const recetas = await recetaService.obtenerRecetasPorUsuario(userId);
     res.json(recetas);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -28,7 +28,7 @@ exports.crearOEditarReceta = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -41,7 +41,7 @@ exports.agregarRelacion = async (req, res) => {
 
     res.json({ message: 'Nueva relación agregada exitosamente' });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -54,7 +54,7 @@ exports.eliminarAsignacion = async (req, res) => {
 
     res.json({ message: 'Asignación de receta eliminada exitosamente' });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -67,7 +67,7 @@ exports.eliminarReceta = async (req, res) => {
 
     res.json({ message: 'Receta eliminada exitosamente' });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 

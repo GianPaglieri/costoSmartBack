@@ -7,7 +7,7 @@ exports.obtenerIngredientes = async (req, res) => {
     const ingredientes = await ingredienteService.obtenerIngredientes(userId);
     res.json({ success: true, ingredientes });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -20,7 +20,7 @@ exports.guardarIngrediente = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -43,7 +43,7 @@ exports.editarIngrediente = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -53,7 +53,7 @@ exports.obtenerIngredientesMenosStock = async (req, res) => {
     const ingredientes = await ingredienteService.obtenerIngredientesMenosStock(userId);
     res.json(ingredientes);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -66,6 +66,6 @@ exports.eliminarIngrediente = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
