@@ -2,6 +2,7 @@ const Ingrediente = require('../models/Ingrediente');
 const Receta = require('../models/Receta');
 const { actualizarListaPrecios } = require('../services/calculadoraCostos');
 
+
 // Obtener todos los ingredientes del usuario
 exports.obtenerIngredientes = async (userId) => {
   return await Ingrediente.findAll({ where: { id_usuario: userId } });
