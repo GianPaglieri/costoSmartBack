@@ -25,7 +25,8 @@ exports.obtenerVentas = async (req, res) => {
     const ventas = await ventaService.obtenerVentas(userId);
     res.json(ventas);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -38,7 +39,8 @@ exports.registrarVenta = async (req, res) => {
     const venta = await ventaService.registrarVenta({ id_torta, userId });
     res.json({ success: true, venta });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 };
 
@@ -49,7 +51,8 @@ exports.obtenerCantidadVentas = async (req, res) => {
     const cantidad = await ventaService.obtenerCantidadVentas(userId);
     res.json({ cantidadVentas: cantidad });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -61,7 +64,8 @@ exports.obtenerCantidadVentasSemana = async (req, res) => {
     const cantidad = await ventaService.obtenerCantidadVentasSemana(userId, current);
     res.json({ cantidadVentas: cantidad });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -72,7 +76,8 @@ exports.obtenerGanancias = async (req, res) => {
     const ganancias = await ventaService.obtenerGanancias(userId);
     res.json({ ganancias });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -93,6 +98,7 @@ exports.obtenerPorcentajeVentas = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
   }
 };
