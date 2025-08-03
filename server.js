@@ -4,18 +4,11 @@ const app = express();
 require('./config/env');
 const db = require('./database/connection');
 const path = require('path');
-const { actualizarListaPrecios, calcularCostoTotalReceta } = require('./services/calculadoraCostos');
-const upload = require('./multerConfig'); 
-const { guardarReceta } = require('./controllers/recetasController');
 
 // Conexión a la base de datos
-db.authenticate()
-  .then(() => {
-    // console.log('Conexión exitosa a la base de datos');
-  })
-  .catch((error) => {
-    console.error('Error al conectar a la base de datos:', error);
-  });
+db.authenticate().catch((error) => {
+  console.error('Error al conectar a la base de datos:', error);
+});
 
 // ******************************
 // CONFIGURACIÓN CORS ABIERTA (SOLO PARA DESARROLLO)
@@ -61,16 +54,10 @@ app.use('/tortas', tortasRoutes);
 app.use('/recetas', recetasRoutes);
 app.use('/lista_precios', listaPreciosRoutes);
 
-// Ruta para subir imágenes
-//app.post('/recetas', upload.single('imagen'), guardarReceta);
-
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Puerto del servidor
 const PORT = process.env.PORT || 3010;
 
-app.listen(PORT, () => {
-  // console.log(`Servidor corriendo en el puerto ${PORT}`);
-  // console.log(`CORS abierto: cualquier origen permitido (modo desarrollo)`);
-});
+app.listen(PORT);
