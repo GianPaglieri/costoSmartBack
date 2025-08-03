@@ -74,11 +74,19 @@ exports.obtenerTortasConPrecioPorUsuario = async (userId) => {
   });
 };
 
-exports.editarTorta = async ({ id, nombre_torta, descripcion_torta, imagen }) => {
+exports.editarTorta = async ({ id, nombre_torta, descripcion_torta, imagen, userId }) => {
   const torta = await Torta.findOne({ where: { ID_TORTA: id } });
 
   if (!torta) {
-    throw new Error('Torta no encontrada');
+    const error = new Error('Torta no encontrada');
+    error.status = 404;
+    throw error;
+  }
+
+  if (torta.id_usuario !== userId) {
+    const error = new Error('No autorizado');
+    error.status = 403;
+    throw error;
   }
 
   await torta.update({
@@ -92,14 +100,28 @@ exports.editarTorta = async ({ id, nombre_torta, descripcion_torta, imagen }) =>
       nombre_torta,
       imagen_torta: imagen
     },
-    { where: { id_torta: id } }
+    { where: { id_torta: id, id_usuario: userId } }
   );
 
   return torta;
 };
 
-exports.eliminarTorta = async (id) => {
-  await Receta.destroy({ where: { ID_TORTA: id } });
-  await ListaPrecios.destroy({ where: { id_torta: id } });
-  await Torta.destroy({ where: { ID_TORTA: id } });
+exports.eliminarTorta = async (id, userId) => {
+  const torta = await Torta.findOne({ where: { ID_TORTA: id } });
+
+  if (!torta) {
+    const error = new Error('Torta no encontrada');
+    error.status = 404;
+    throw error;
+  }
+
+  if (torta.id_usuario !== userId) {
+    const error = new Error('No autorizado');
+    error.status = 403;
+    throw error;
+  }
+
+  await Receta.destroy({ where: { ID_TORTA: id, id_usuario: userId } });
+  await ListaPrecios.destroy({ where: { id_torta: id, id_usuario: userId } });
+  await Torta.destroy({ where: { ID_TORTA: id, id_usuario: userId } });
 };
