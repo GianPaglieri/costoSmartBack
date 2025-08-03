@@ -27,7 +27,8 @@ exports.createUser = async (req, res) => {
 exports.getUsers = async (req, res) => {
   try {
     const users = await userService.getUsers();
-    res.json(users);
+    const safeUsers = users.map(({ id, nombre, email }) => ({ id, nombre, email }));
+    res.json(safeUsers);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener usuarios' });
   }
