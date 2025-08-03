@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-require('dotenv').config();
+require('./config/env');
 const db = require('./database/connection');
 const path = require('path');
 const { actualizarListaPrecios, calcularCostoTotalReceta } = require('./services/calculadoraCostos');

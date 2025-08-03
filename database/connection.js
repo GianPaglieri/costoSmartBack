@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
+require('../config/env');
 console.log("💡 DB_NAME ACTUAL:", process.env.DB_NAME);
 
 

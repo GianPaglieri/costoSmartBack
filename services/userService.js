@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Ingrediente = require('../models/Ingrediente');
 const nodemailer = require('nodemailer');
-require('dotenv').config();
+require('../config/env');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const RESET_SECRET_KEY = process.env.RESET_SECRET_KEY || JWT_SECRET;
