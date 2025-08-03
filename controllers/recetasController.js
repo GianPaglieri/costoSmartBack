@@ -3,19 +3,18 @@
 const recetaService = require('../services/recetaServices');
 const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
-exports.obtenerRecetas = async (req, res) => {
+exports.obtenerRecetas = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
     const recetas = await recetaService.obtenerRecetasPorUsuario(userId);
     res.json(recetas);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.crearOEditarReceta = async (req, res) => {
+exports.crearOEditarReceta = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -31,12 +30,11 @@ exports.crearOEditarReceta = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.agregarRelacion = async (req, res) => {
+exports.agregarRelacion = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -46,12 +44,11 @@ exports.agregarRelacion = async (req, res) => {
 
     res.json({ message: 'Nueva relación agregada exitosamente' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.eliminarAsignacion = async (req, res) => {
+exports.eliminarAsignacion = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -61,12 +58,11 @@ exports.eliminarAsignacion = async (req, res) => {
 
     res.json({ message: 'Asignación de receta eliminada exitosamente' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.eliminarReceta = async (req, res) => {
+exports.eliminarReceta = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -76,8 +72,7 @@ exports.eliminarReceta = async (req, res) => {
 
     res.json({ message: 'Receta eliminada exitosamente' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 

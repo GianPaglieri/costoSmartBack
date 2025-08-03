@@ -1,6 +1,6 @@
 const userService = require('../services/userService');
 
-exports.loginUser = async (req, res) => {
+exports.loginUser = async (req, res, next) => {
   const { email, contrasena } = req.body;
   if (!email || !contrasena) return res.status(400).json({ error: 'Faltan datos' });
 
@@ -8,11 +8,12 @@ exports.loginUser = async (req, res) => {
     const token = await userService.loginUser({ email, contrasena });
     res.json({ success: true, token });
   } catch (error) {
-    res.status(401).json({ error: error.message });
+    error.status = 401;
+    next(error);
   }
 };
 
-exports.createUser = async (req, res) => {
+exports.createUser = async (req, res, next) => {
   const { nombre, email, contrasena } = req.body;
   if (!nombre || !email || !contrasena) return res.status(400).json({ error: 'Faltan datos' });
 
@@ -20,21 +21,21 @@ exports.createUser = async (req, res) => {
     const user = await userService.createUser({ nombre, email, contrasena });
     res.json({ success: true, user });
   } catch (error) {
-    res.status(500).json({ error: 'Error al crear el usuario' });
+    next(error);
   }
 };
 
-exports.getUsers = async (req, res) => {
+exports.getUsers = async (req, res, next) => {
   try {
     const users = await userService.getUsers();
     const safeUsers = users.map(({ id, nombre, email }) => ({ id, nombre, email }));
     res.json(safeUsers);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener usuarios' });
+    next(error);
   }
 };
 
-exports.requestPasswordReset = async (req, res) => {
+exports.requestPasswordReset = async (req, res, next) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email es requerido' });
 
@@ -42,12 +43,11 @@ exports.requestPasswordReset = async (req, res) => {
     await userService.requestPasswordReset(email);
     res.json({ success: true, message: 'Correo enviado' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.resetPassword = async (req, res) => {
+exports.resetPassword = async (req, res, next) => {
   const { token, newPassword } = req.body;
   if (!token || !newPassword) return res.status(400).json({ error: 'Faltan datos' });
 
@@ -55,7 +55,6 @@ exports.resetPassword = async (req, res) => {
     await userService.resetPassword(token, newPassword);
     res.json({ success: true, message: 'Contraseña restablecida' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
