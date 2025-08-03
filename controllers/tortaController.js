@@ -31,6 +31,19 @@ exports.obtenerTortas = async (req, res) => {
   }
 };
 
+exports.obtenerTortasConPrecios = async (req, res) => {
+  try {
+    const userId = obtenerUserIdDesdeRequest(req, res);
+    if (!userId) return;
+
+    const tortasConPrecio = await tortaService.obtenerTortasConPrecioPorUsuario(userId);
+    res.json(tortasConPrecio);
+  } catch (error) {
+    console.error('Error al obtener las tortas con precio:', error);
+    res.status(500).json({ error: 'Error al obtener las tortas con precio' });
+  }
+};
+
 exports.editarTorta = async (req, res) => {
   try {
     const { id } = req.params;

@@ -55,6 +55,25 @@ exports.obtenerTortasPorUsuario = async (userId) => {
   });
 };
 
+exports.obtenerTortasConPrecioPorUsuario = async (userId) => {
+  const tortas = await Torta.findAll({ where: { id_usuario: userId } });
+  const preciosTortas = await ListaPrecios.findAll({ where: { id_usuario: userId } });
+
+  return tortas.map((torta) => {
+    const precioTorta = preciosTortas.find(
+      (precio) => precio.id_torta === torta.ID_TORTA
+    );
+
+    return {
+      ID_TORTA: torta.ID_TORTA,
+      nombre_torta: torta.nombre_torta,
+      descripcion_torta: torta.descripcion_torta,
+      imagen: torta.imagen,
+      precio: precioTorta ? precioTorta.costo_total : null,
+    };
+  });
+};
+
 exports.editarTorta = async ({ id, nombre_torta, descripcion_torta, imagen }) => {
   const torta = await Torta.findOne({ where: { ID_TORTA: id } });
 
