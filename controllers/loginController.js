@@ -6,7 +6,7 @@ require('../config/env');
 // Clave secreta para firmar el token
 const secretKey = process.env.JWT_SECRET;
 
-exports.loginUser = async (req, res) => {
+exports.loginUser = async (req, res, next) => {
   const { email, contrasena } = req.body;
   // console.log('Intentando iniciar sesión con:', req.body);
 
@@ -32,7 +32,6 @@ exports.loginUser = async (req, res) => {
 
     res.json({ success: true, token });
   } catch (error) {
-    console.error('Error al iniciar sesión:', error);
-    res.status(500).json({ error: 'Error al iniciar sesión' });
+    next(error);
   }
 };

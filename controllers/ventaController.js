@@ -18,19 +18,18 @@ const getLast7DaysRange = () => {
   return { current: { start: currentStart, end: currentEnd }, last: { start: lastPeriodStart, end: lastPeriodEnd } };
 };
 
-exports.obtenerVentas = async (req, res) => {
+exports.obtenerVentas = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
     const ventas = await ventaService.obtenerVentas(userId);
     res.json(ventas);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.registrarVenta = async (req, res) => {
+exports.registrarVenta = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -39,24 +38,22 @@ exports.registrarVenta = async (req, res) => {
     const venta = await ventaService.registrarVenta({ id_torta, userId });
     res.json({ success: true, venta });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, error: 'Server error' });
+    next(error);
   }
 };
 
-exports.obtenerCantidadVentas = async (req, res) => {
+exports.obtenerCantidadVentas = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
     const cantidad = await ventaService.obtenerCantidadVentas(userId);
     res.json({ cantidadVentas: cantidad });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.obtenerCantidadVentasSemana = async (req, res) => {
+exports.obtenerCantidadVentasSemana = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -64,24 +61,22 @@ exports.obtenerCantidadVentasSemana = async (req, res) => {
     const cantidad = await ventaService.obtenerCantidadVentasSemana(userId, current);
     res.json({ cantidadVentas: cantidad });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.obtenerGanancias = async (req, res) => {
+exports.obtenerGanancias = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
     const ganancias = await ventaService.obtenerGanancias(userId);
     res.json({ ganancias });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.obtenerPorcentajeVentas = async (req, res) => {
+exports.obtenerPorcentajeVentas = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -98,7 +93,6 @@ exports.obtenerPorcentajeVentas = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };

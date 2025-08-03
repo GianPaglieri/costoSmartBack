@@ -44,6 +44,7 @@ const listaPreciosRoutes = require('./routes/lista_precios');
 const ventasRoutes = require('./routes/ventas');
 const userRoutes = require('./routes/users');
 const loginRoutes = require('./routes/login');
+const errorHandler = require('./middleware/errorHandler');
 
 // Configurar rutas
 app.use('/ventas', ventasRoutes);
@@ -56,6 +57,9 @@ app.use('/lista_precios', listaPreciosRoutes);
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Manejo de errores
+app.use(errorHandler);
 
 // Puerto del servidor
 const PORT = process.env.PORT || 3010;

@@ -1,19 +1,18 @@
 const ingredienteService = require('../services/ingredienteService');
 const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
-exports.obtenerIngredientes = async (req, res) => {
+exports.obtenerIngredientes = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
     const ingredientes = await ingredienteService.obtenerIngredientes(userId);
     res.json({ success: true, ingredientes });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.guardarIngrediente = async (req, res) => {
+exports.guardarIngrediente = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -23,12 +22,11 @@ exports.guardarIngrediente = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.editarIngrediente = async (req, res) => {
+exports.editarIngrediente = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { nombre, unidad_Medida, tamano_Paquete, costo, CantidadStock } = req.body;
@@ -48,24 +46,22 @@ exports.editarIngrediente = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.obtenerIngredientesMenosStock = async (req, res) => {
+exports.obtenerIngredientesMenosStock = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
     const ingredientes = await ingredienteService.obtenerIngredientesMenosStock(userId);
     res.json(ingredientes);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.eliminarIngrediente = async (req, res) => {
+exports.eliminarIngrediente = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -75,7 +71,6 @@ exports.eliminarIngrediente = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };

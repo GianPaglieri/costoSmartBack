@@ -3,7 +3,7 @@
 const tortaService = require('../services/tortaService');
 const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
-exports.crearTorta = async (req, res) => {
+exports.crearTorta = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -14,24 +14,22 @@ exports.crearTorta = async (req, res) => {
 
     res.json({ success: true, torta });
   } catch (error) {
-    console.error('Error al crear la torta:', error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.obtenerTortas = async (req, res) => {
+exports.obtenerTortas = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
     const tortas = await tortaService.obtenerTortasPorUsuario(userId);
     res.json(tortas);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.obtenerTortasConPrecios = async (req, res) => {
+exports.obtenerTortasConPrecios = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -39,12 +37,11 @@ exports.obtenerTortasConPrecios = async (req, res) => {
     const tortasConPrecio = await tortaService.obtenerTortasConPrecioPorUsuario(userId);
     res.json(tortasConPrecio);
   } catch (error) {
-    console.error('Error al obtener las tortas con precio:', error);
-    res.status(500).json({ error: 'Error al obtener las tortas con precio' });
+    next(error);
   }
 };
 
-exports.editarTorta = async (req, res) => {
+exports.editarTorta = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -56,18 +53,11 @@ exports.editarTorta = async (req, res) => {
 
     res.json({ success: true, torta });
   } catch (error) {
-    if (error.status === 403) {
-      return res.status(403).json({ error: 'Torta no pertenece al usuario' });
-    }
-    if (error.status === 404) {
-      return res.status(404).json({ error: 'Torta no encontrada' });
-    }
-    console.error('Error al editar la torta:', error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
 
-exports.eliminarTorta = async (req, res) => {
+exports.eliminarTorta = async (req, res, next) => {
   try {
     const userId = obtenerUserIdDesdeRequest(req, res);
     if (!userId) return;
@@ -77,13 +67,6 @@ exports.eliminarTorta = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    if (error.status === 403) {
-      return res.status(403).json({ error: 'Torta no pertenece al usuario' });
-    }
-    if (error.status === 404) {
-      return res.status(404).json({ error: 'Torta no encontrada' });
-    }
-    console.error('Error al eliminar la torta:', error);
-    res.status(500).json({ error: 'Server error' });
+    next(error);
   }
 };
