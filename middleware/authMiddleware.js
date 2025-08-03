@@ -1,7 +1,7 @@
 // middlewares/authMiddleware.js
 
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+require('../config/env');
 
 exports.obtenerUserIdDesdeRequest = (req, res) => {
   if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {

@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-require('dotenv').config();
+require('../config/env');
 
 // Clave secreta para firmar el token
 const secretKey = process.env.JWT_SECRET;
