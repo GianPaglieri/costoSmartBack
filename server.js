@@ -11,13 +11,19 @@ db.authenticate().catch((error) => {
 });
 
 // ******************************
-// CONFIGURACIÓN CORS ABIERTA (SOLO PARA DESARROLLO)
+// CONFIGURACIÓN CORS
 // ******************************
 
 
 
-// Leer origen permitido desde variable de entorno, por defecto abierto
-const corsOrigin = process.env.CORS_ORIGIN || '*';
+// Leer origen permitido desde variable de entorno, por defecto http://localhost:3000
+const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
+
+if (corsOrigin === '*') {
+  console.warn(
+    "Advertencia: CORS configurado con origen abierto ('*'). Esto solo debe usarse en desarrollo."
+  );
+}
 
 const corsOptions = {
     origin: corsOrigin,
