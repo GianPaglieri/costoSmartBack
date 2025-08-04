@@ -1,19 +1,37 @@
 const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const uploadDir = path.join(__dirname, 'uploads');
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // console.log('Multer: Destination called');
-    cb(null, 'uploads/'); // Asegúrate de que 'uploads/' exista
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    // console.log('Multer: Filename called');
-    // console.log('File received:', file); // Agregar esta línea para ver detalles sobre el archivo recibido
-    const ext = file.originalname.split('.').pop(); // Obtener la extensión del archivo original
+    const ext = path.extname(file.originalname);
     const uniqueSuffix = Date.now();
-    cb(null, `imagen-${uniqueSuffix}.${ext}`); // Nuevo formato para el nombre del archivo
+    cb(null, `imagen-${uniqueSuffix}${ext}`);
   },
 });
 
-const upload = multer({ storage: storage });
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/png'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only jpg and png images are allowed'));
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 module.exports = upload;
