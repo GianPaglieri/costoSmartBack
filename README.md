@@ -8,6 +8,7 @@ El servidor utiliza variables de entorno que pueden declararse en un archivo `.e
 
 - `CORS_ORIGIN`: origen permitido para las solicitudes CORS. Si no se define, se permite cualquier origen (útil para desarrollo).
 - `PORT`: puerto en el que se ejecuta el servidor. Por defecto `3001`.
+- `LOG_DB_NAME`: si se establece en `true`, muestra en consola el nombre de la base de datos utilizada.
 
 Ejemplo de archivo `.env`:
 
@@ -19,6 +20,7 @@ DB_PORT=3306
 DB_USER=root
 DB_PASS=tu_contrasena
 DB_NAME=costo_smart
+LOG_DB_NAME=false
 ```
 
 ## Uso
