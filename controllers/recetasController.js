@@ -1,12 +1,10 @@
 // controllers/recetaController.js
 
 const recetaService = require('../services/recetaServices');
-const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 exports.obtenerRecetas = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const recetas = await recetaService.obtenerRecetasPorUsuario(userId);
     res.json(recetas);
   } catch (error) {
@@ -16,8 +14,7 @@ exports.obtenerRecetas = async (req, res, next) => {
 
 exports.crearOEditarReceta = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const { ID_TORTA, ID_INGREDIENTE } = req.params;
     const { total_cantidad } = req.body;
 
@@ -36,8 +33,7 @@ exports.crearOEditarReceta = async (req, res, next) => {
 
 exports.agregarRelacion = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const { ID_TORTA, ID_INGREDIENTE, cantidad } = req.body;
 
     await recetaService.agregarRelacion({ ID_TORTA, ID_INGREDIENTE, cantidad, userId });
@@ -50,8 +46,7 @@ exports.agregarRelacion = async (req, res, next) => {
 
 exports.eliminarAsignacion = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const { ID_TORTA, ID_INGREDIENTE } = req.params;
 
     await recetaService.eliminarAsignacion({ ID_TORTA, ID_INGREDIENTE, userId });
@@ -64,8 +59,7 @@ exports.eliminarAsignacion = async (req, res, next) => {
 
 exports.eliminarReceta = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const { ID_TORTA } = req.params;
 
     await recetaService.eliminarReceta({ ID_TORTA, userId });

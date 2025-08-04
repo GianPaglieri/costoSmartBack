@@ -1,12 +1,10 @@
 // controllers/tortaController.js
 
 const tortaService = require('../services/tortaService');
-const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 exports.crearTorta = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const { nombre_torta, descripcion_torta } = req.body;
     const imagen = req.file ? `uploads/${req.file.filename}` : null;
 
@@ -20,8 +18,7 @@ exports.crearTorta = async (req, res, next) => {
 
 exports.obtenerTortas = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const tortas = await tortaService.obtenerTortasPorUsuario(userId);
     res.json(tortas);
   } catch (error) {
@@ -31,8 +28,7 @@ exports.obtenerTortas = async (req, res, next) => {
 
 exports.obtenerTortasConPrecios = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
 
     const tortasConPrecio = await tortaService.obtenerTortasConPrecioPorUsuario(userId);
     res.json(tortasConPrecio);
@@ -43,8 +39,7 @@ exports.obtenerTortasConPrecios = async (req, res, next) => {
 
 exports.editarTorta = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const { id } = req.params;
     const { nombre_torta, descripcion_torta } = req.body;
     const imagen = req.file ? `uploads/${req.file.filename}` : null;
@@ -59,8 +54,7 @@ exports.editarTorta = async (req, res, next) => {
 
 exports.eliminarTorta = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const { id } = req.params;
 
     await tortaService.eliminarTorta(id, userId);
