@@ -2,7 +2,11 @@ const express = require('express');
 const router = express.Router();
 const tortaController = require('../controllers/tortaController');
 const upload = require('../multerConfig');
+const { requireAuth } = require('../middleware/authMiddleware');
 
+
+// Aplicar autenticación a todas las rutas
+router.use(requireAuth);
 
 // Ruta para obtener todas las tortas del usuario (usando el controller normal)
 router.get('/', tortaController.obtenerTortas);

@@ -5,15 +5,13 @@ const Torta = require('../models/Torta');
 const Ingrediente = require('../models/Ingrediente');
 
 const { calcularCostoTotalReceta } = require('../services/calculadoraCostos');
-const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 
 
 exports.actualizarCostoTotalReceta = async (req, res, next) => {
   try {
     const { idTorta } = req.body;
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
 
     const receta = await Receta.findOne({
       where: { ID_TORTA: idTorta, id_usuario: userId }
@@ -40,8 +38,7 @@ exports.actualizarCostoTotalReceta = async (req, res, next) => {
 
 exports.obtenerListaPreciosConImagen = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
 
     const listaPrecios = await ListaPrecios.findAll({ where: { id_usuario: userId } });
 

@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const recetasController = require('../controllers/recetasController');
+const { requireAuth } = require('../middleware/authMiddleware');
+
+// Aplicar autenticación a todas las rutas
+router.use(requireAuth);
 
 // Ruta para obtener todas las recetas
 router.get('/', recetasController.obtenerRecetas);

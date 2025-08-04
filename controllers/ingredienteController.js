@@ -1,10 +1,8 @@
 const ingredienteService = require('../services/ingredienteService');
-const { obtenerUserIdDesdeRequest } = require('../middleware/authMiddleware');
 
 exports.obtenerIngredientes = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const ingredientes = await ingredienteService.obtenerIngredientes(userId);
     res.json({ success: true, ingredientes });
   } catch (error) {
@@ -14,8 +12,7 @@ exports.obtenerIngredientes = async (req, res, next) => {
 
 exports.guardarIngrediente = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const { nombre, unidad_Medida, tamano_Paquete, costo, CantidadStock } = req.body;
 
     await ingredienteService.guardarIngrediente({ nombre, unidad_Medida, tamano_Paquete, costo, CantidadStock, userId });
@@ -31,8 +28,7 @@ exports.editarIngrediente = async (req, res, next) => {
     const { id } = req.params;
     const { nombre, unidad_Medida, tamano_Paquete, costo, CantidadStock } = req.body;
 
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
 
     await ingredienteService.editarIngrediente({
       id,
@@ -52,8 +48,7 @@ exports.editarIngrediente = async (req, res, next) => {
 
 exports.obtenerIngredientesMenosStock = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const ingredientes = await ingredienteService.obtenerIngredientesMenosStock(userId);
     res.json(ingredientes);
   } catch (error) {
@@ -63,8 +58,7 @@ exports.obtenerIngredientesMenosStock = async (req, res, next) => {
 
 exports.eliminarIngrediente = async (req, res, next) => {
   try {
-    const userId = obtenerUserIdDesdeRequest(req, res);
-    if (!userId) return;
+    const userId = req.userId;
     const { id } = req.params;
 
     await ingredienteService.eliminarIngrediente({ id, userId });
