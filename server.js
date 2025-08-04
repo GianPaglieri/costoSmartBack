@@ -43,13 +43,11 @@ const recetasRoutes = require('./routes/recetas');
 const listaPreciosRoutes = require('./routes/lista_precios');
 const ventasRoutes = require('./routes/ventas');
 const userRoutes = require('./routes/users');
-const loginRoutes = require('./routes/login');
 const errorHandler = require('./middleware/errorHandler');
 
 // Configurar rutas
 app.use('/ventas', ventasRoutes);
 app.use('/users', userRoutes);
-app.use('', loginRoutes); // /api/login disponible
 app.use('/ingredientes', ingredientesRoutes);
 app.use('/tortas', tortasRoutes);
 app.use('/recetas', recetasRoutes);
