@@ -1,6 +1,9 @@
 const { Sequelize } = require('sequelize');
 require('../config/env');
-console.log("💡 DB_NAME ACTUAL:", process.env.DB_NAME);
+
+if (process.env.LOG_DB_NAME === 'true') {
+  console.log('💡 DB_NAME ACTUAL:', process.env.DB_NAME);
+}
 
 
 const db = new Sequelize(
