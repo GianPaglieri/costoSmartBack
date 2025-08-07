@@ -35,13 +35,6 @@ const actualizarStockIngredientes = async (idTorta, userId) => {
         { CantidadStock: nuevaCantidad },
         { where: { id: idIngrediente, id_usuario: userId } }
       );
-
-      const ingredienteActualizado = await Ingrediente.findOne({
-        where: { id: idIngrediente, id_usuario: userId }
-      });
-      const cantidadActualDespues = ingredienteActualizado.CantidadStock;
-
-    
     }
 
   // console.log('Stock de ingredientes actualizado correctamente');
@@ -52,11 +45,4 @@ const actualizarStockIngredientes = async (idTorta, userId) => {
 };
 
 module.exports = { actualizarStockIngredientes };
-
-
-
-
-
-
-
 
