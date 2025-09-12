@@ -26,9 +26,10 @@ router.post(
 
 router.post(
   '/login',
+  // Validaciones relajadas temporalmente: permitir cualquier email/contraseña
   validate([
-    body('email').isEmail().normalizeEmail(),
-    body('contrasena').notEmpty().trim()
+    body('email').trim(),
+    body('contrasena').trim()
   ]),
   loginUser
 );
