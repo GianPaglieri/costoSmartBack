@@ -28,7 +28,8 @@ router.put(
   validate([
     param('ID_TORTA').isInt().toInt(),
     param('ID_INGREDIENTE').isInt().toInt(),
-    body('total_cantidad').isFloat({ gt: 0 }).toFloat()
+    // Permitir 0 en edición (setear en cero)
+    body('total_cantidad').isFloat({ min: 0 }).toFloat()
   ]),
   recetasController.crearOEditarReceta
 );

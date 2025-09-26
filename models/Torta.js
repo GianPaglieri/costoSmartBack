@@ -23,6 +23,11 @@ const Torta = db.define(
             allowNull: false,
 
         },
+        porcentaje_ganancia: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+            defaultValue: 0,
+        },
          id_usuario: { // Agrega la columna id_usuario
             type: DataTypes.INTEGER,
             allowNull: false,

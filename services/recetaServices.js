@@ -4,6 +4,7 @@ const Receta = require('../models/Receta');
 const Torta = require('../models/Torta');
 const Ingrediente = require('../models/Ingrediente');
 const { calcularCostoTotalReceta, actualizarListaPrecios } = require('./calculadoraCostos');
+const { ensurePackagingForUser } = require('./packagingService');
 const Sequelize = require('sequelize');
 
 // Obtener recetas agrupadas por torta
@@ -40,7 +41,7 @@ exports.obtenerRecetasPorUsuario = async (userId) => {
   return Object.values(recetasAgrupadas);
 };
 
-// Crear o editar una relación receta-ingrediente
+// Crear o editar una relaci??n receta-ingrediente
 exports.crearOEditarReceta = async ({ ID_TORTA, ID_INGREDIENTE, total_cantidad, userId }) => {
   if (!ID_TORTA || !ID_INGREDIENTE || total_cantidad === undefined) {
     throw new Error('Faltan datos de la receta');
@@ -68,20 +69,35 @@ exports.crearOEditarReceta = async ({ ID_TORTA, ID_INGREDIENTE, total_cantidad, 
   ]);
 };
 
-// Agregar nueva relación
+// Agregar nueva relaci??n
 exports.agregarRelacion = async ({ ID_TORTA, ID_INGREDIENTE, cantidad, userId }) => {
-  await Receta.create({
-    ID_TORTA,
-    ID_INGREDIENTE,
-    cantidad,
-    id_usuario: userId
-  });
+  const cantidadNum = Number(cantidad);
+  if (Number.isNaN(cantidadNum)) {
+    throw new Error('Cantidad inv??lida');
+  }
+
+  // Evitar duplicados: si ya existe, sumamos cantidades; si no, creamos
+  const existente = await Receta.findOne({ where: { ID_TORTA, ID_INGREDIENTE, id_usuario: userId } });
+  if (existente) {
+    const nueva = Number(existente.cantidad || 0) + cantidadNum;
+    await Receta.update(
+      { cantidad: nueva },
+      { where: { ID_TORTA, ID_INGREDIENTE, id_usuario: userId } }
+    );
+  } else {
+    await Receta.create({
+      ID_TORTA,
+      ID_INGREDIENTE,
+      cantidad: cantidadNum,
+      id_usuario: userId
+    });
+  }
 
   await calcularCostoTotalReceta(ID_TORTA, userId);
   await actualizarListaPrecios(null, userId);
 };
 
-// Eliminar asignación de un ingrediente de una torta
+// Eliminar asignaci??n de un ingrediente de una torta
 exports.eliminarAsignacion = async ({ ID_TORTA, ID_INGREDIENTE, userId }) => {
   const result = await Receta.destroy({
     where: { ID_TORTA, ID_INGREDIENTE, id_usuario: userId }
@@ -90,7 +106,7 @@ exports.eliminarAsignacion = async ({ ID_TORTA, ID_INGREDIENTE, userId }) => {
   await actualizarListaPrecios(null, userId);
 
   if (result === 0) {
-    throw new Error('Asignación de receta no encontrada');
+    throw new Error('Asignaci??n de receta no encontrada');
   }
 };
 
@@ -105,27 +121,28 @@ exports.eliminarReceta = async ({ ID_TORTA, userId }) => {
   await actualizarListaPrecios(null, userId);
 };
 
-// Crear receta automática con el ingrediente "Packaging"
+// Crear receta automatica con el ingrediente "Packaging"
 exports.crearRecetaAutomatica = async (idTorta, userId) => {
-  let packaging = await Ingrediente.findOne({
-    where: { nombre: 'Packaging', id_usuario: userId }
+  const packaging = await ensurePackagingForUser(userId);
+
+  const existente = await Receta.findOne({
+    where: {
+      ID_TORTA: idTorta,
+      ID_INGREDIENTE: packaging.id,
+      id_usuario: userId,
+    },
   });
 
-  if (!packaging) {
-    packaging = await Ingrediente.create({
-      nombre: 'Packaging',
-      unidad_Medida: 'unidad',
-      tamano_Paquete: 1,
-      costo: 1000,
-      CantidadStock: 0,
-      id_usuario: userId
+  if (!existente) {
+    await Receta.create({
+      ID_TORTA: idTorta,
+      ID_INGREDIENTE: packaging.id,
+      cantidad: 1,
+      id_usuario: userId,
     });
   }
-
-  await Receta.create({
-    ID_TORTA: idTorta,
-    ID_INGREDIENTE: packaging.id,
-    cantidad: 1,
-    id_usuario: userId
-  });
 };
+
+
+
+

@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const Ingrediente = require('../models/Ingrediente');
+const { ensurePackagingForUser } = require('./packagingService');
 const nodemailer = require('nodemailer');
 require('../config/env');
 
@@ -23,7 +23,7 @@ exports.loginUser = async ({ email, contrasena }) => {
   if (!user) throw new Error('Usuario no encontrado');
   
   const isMatch = await bcrypt.compare(contrasena, user.contrasena);
-  if (!isMatch) throw new Error('Credenciales inválidas');
+  if (!isMatch) throw new Error('Credenciales invalidas');
 
   const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
   return token;
@@ -34,14 +34,7 @@ exports.createUser = async ({ nombre, email, contrasena }) => {
   const hashedPassword = await bcrypt.hash(contrasena, 10);
   const user = await User.create({ nombre, email, contrasena: hashedPassword });
 
-  await Ingrediente.create({
-    nombre: 'Packaging',
-    unidad_Medida: 'unidad',
-    tamano_Paquete: 1,
-    costo: 1000,
-    CantidadStock: 0,
-    id_usuario: user.id
-  });
+  await ensurePackagingForUser(user.id);
 
   return user;
 };
@@ -67,10 +60,10 @@ exports.requestPasswordReset = async (email) => {
   await transporter.sendMail({
     from: EMAIL_USER,
     to: user.email,
-    subject: 'Recuperación de contraseña',
+    subject: 'Recuperacion de contrasena',
     html: `
       <p>Hola ${user.nombre},</p>
-      <p>Para restablecer tu contraseña haz clic en el siguiente enlace (válido 1 hora):</p>
+      <p>Para restablecer tu contrasena haz clic en el siguiente enlace (valido 1 hora):</p>
       <p><a href="${resetLink}">${resetLink}</a></p>
       <p>Si no solicitaste esto, puedes ignorar este correo.</p>
     `
@@ -80,7 +73,7 @@ exports.requestPasswordReset = async (email) => {
 // Reset password
 exports.resetPassword = async (token, newPassword) => {
   const decoded = jwt.verify(token, RESET_SECRET_KEY);
-  if (decoded.action !== 'reset-password') throw new Error('Token inválido');
+  if (decoded.action !== 'reset-password') throw new Error('Token invalido');
 
   const user = await User.findByPk(decoded.userId);
   if (!user) throw new Error('Usuario no encontrado');

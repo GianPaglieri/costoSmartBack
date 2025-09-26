@@ -19,6 +19,10 @@ const ListaPrecios = db.define(
             type: DataTypes.FLOAT,
             allowNull: false,
         },
+        precio_lista: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+        },
         id_usuario: { // Agrega la columna id_usuario
             type: DataTypes.INTEGER,
             allowNull: false,
