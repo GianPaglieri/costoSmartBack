@@ -41,6 +41,32 @@ exports.obtenerRecetasPorUsuario = async (userId) => {
   return Object.values(recetasAgrupadas);
 };
 
+// Extiende obtenerRecetasPorUsuario para incluir el desglose monetario por ingrediente
+exports.obtenerRecetasConDesglose = async (userId) => {
+  const recetasAgrupadas = await exports.obtenerRecetasPorUsuario(userId);
+  const { calcularCostoConDesgloseReceta } = require('./calculadoraCostos');
+
+  // Para cada torta, calcular el desglose
+  const resultado = [];
+  for (const torta of recetasAgrupadas) {
+    try {
+      const { total, desglose } = await calcularCostoConDesgloseReceta(torta.ID_TORTA, userId);
+      resultado.push({
+        ...torta,
+        costos: {
+          total,
+          desglose,
+        },
+      });
+    } catch (error) {
+      // En caso de error, devolvemos la torta sin desglose pero sin romper la respuesta
+      resultado.push({ ...torta, costos: { total: 0, desglose: [] } });
+    }
+  }
+
+  return resultado;
+};
+
 // Crear o editar una relaci??n receta-ingrediente
 exports.crearOEditarReceta = async ({ ID_TORTA, ID_INGREDIENTE, total_cantidad, userId }) => {
   if (!ID_TORTA || !ID_INGREDIENTE || total_cantidad === undefined) {

@@ -5,7 +5,15 @@ const recetaService = require('../services/recetaServices');
 exports.obtenerRecetas = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const recetas = await recetaService.obtenerRecetasPorUsuario(userId);
+    // Intentamos obtener las recetas con desglose monetario. Si no está disponible,
+    // usamos la versión anterior para mantener compatibilidad.
+    let recetas;
+    if (typeof recetaService.obtenerRecetasConDesglose === 'function') {
+      recetas = await recetaService.obtenerRecetasConDesglose(userId);
+    } else {
+      recetas = await recetaService.obtenerRecetasPorUsuario(userId);
+    }
+
     res.json(recetas);
   } catch (error) {
     next(error);
