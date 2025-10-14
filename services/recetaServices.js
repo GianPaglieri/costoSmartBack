@@ -26,19 +26,36 @@ exports.obtenerRecetasPorUsuario = async (userId) => {
     where: { id_usuario: userId },
   });
 
-  // Agrupar por torta
-  const recetasAgrupadas = recetas.reduce((acc, receta) => {
-    const { ID_TORTA, nombre_torta, imagen } = receta.get();
-    acc[ID_TORTA] = acc[ID_TORTA] || { ID_TORTA, nombre_torta, imagen, ingredientes: [] };
-    acc[ID_TORTA].ingredientes.push({
-      ID_INGREDIENTE: receta.getDataValue('ID_INGREDIENTE'),
-      Nombre: receta.getDataValue('Nombre'),
-      total_cantidad: receta.getDataValue('total_cantidad'),
-    });
-    return acc;
-  }, {});
+  const recetasAgrupadas = new Map();
 
-  return Object.values(recetasAgrupadas);
+  for (const receta of recetas) {
+    const tortaIdRaw = receta.get('ID_TORTA');
+    const tortaKey = String(tortaIdRaw);
+    const idTortaNumber = Number(tortaIdRaw);
+    const idTorta = Number.isNaN(idTortaNumber) ? tortaIdRaw : idTortaNumber;
+
+    if (!recetasAgrupadas.has(tortaKey)) {
+      recetasAgrupadas.set(tortaKey, {
+        idTorta,
+        nombreTorta: receta.get('nombre_torta'),
+        imagen: receta.get('imagen'),
+        ingredientes: [],
+      });
+    }
+
+    const ingredienteIdRaw = receta.getDataValue('ID_INGREDIENTE');
+    const ingredienteIdNumber = Number(ingredienteIdRaw);
+    const totalCantidadRaw = receta.getDataValue('total_cantidad');
+    const totalCantidadNumber = Number(totalCantidadRaw);
+
+    recetasAgrupadas.get(tortaKey).ingredientes.push({
+      idIngrediente: Number.isNaN(ingredienteIdNumber) ? ingredienteIdRaw : ingredienteIdNumber,
+      nombre: receta.getDataValue('Nombre'),
+      cantidad: Number.isNaN(totalCantidadNumber) ? 0 : totalCantidadNumber,
+    });
+  }
+
+  return Array.from(recetasAgrupadas.values());
 };
 
 // Extiende obtenerRecetasPorUsuario para incluir el desglose monetario por ingrediente
@@ -50,17 +67,61 @@ exports.obtenerRecetasConDesglose = async (userId) => {
   const resultado = [];
   for (const torta of recetasAgrupadas) {
     try {
-      const { total, desglose } = await calcularCostoConDesgloseReceta(torta.ID_TORTA, userId);
+      const { total, ingredientes: ingredientesConCosto } = await calcularCostoConDesgloseReceta(
+        torta.idTorta,
+        userId
+      );
+
+      const ingredientesMap = new Map();
+
+      for (const ingredienteBase of torta.ingredientes) {
+        ingredientesMap.set(ingredienteBase.idIngrediente, {
+          ...ingredienteBase,
+          unitCost: 0,
+          subtotalCost: 0,
+        });
+      }
+
+      for (const detalle of ingredientesConCosto) {
+        const existente = ingredientesMap.get(detalle.idIngrediente);
+        if (existente) {
+          existente.unitCost = Number(detalle.unitCost ?? 0);
+          existente.subtotalCost = Number(detalle.subtotalCost ?? 0);
+        } else {
+          ingredientesMap.set(detalle.idIngrediente, {
+            idIngrediente: detalle.idIngrediente,
+            nombre: detalle.nombre,
+            cantidad: Number(detalle.cantidad ?? 0),
+            unitCost: Number(detalle.unitCost ?? 0),
+            subtotalCost: Number(detalle.subtotalCost ?? 0),
+          });
+        }
+      }
+
+      const ingredientesNormalizados = Array.from(ingredientesMap.values());
+
       resultado.push({
-        ...torta,
+        idTorta: torta.idTorta,
+        nombreTorta: torta.nombreTorta,
+        imagen: torta.imagen,
         costos: {
-          total,
-          desglose,
+          total: Number(total ?? 0),
         },
+        ingredientes: ingredientesNormalizados,
       });
     } catch (error) {
       // En caso de error, devolvemos la torta sin desglose pero sin romper la respuesta
-      resultado.push({ ...torta, costos: { total: 0, desglose: [] } });
+      resultado.push({
+        idTorta: torta.idTorta,
+        nombreTorta: torta.nombreTorta,
+        imagen: torta.imagen,
+        costos: { total: 0 },
+        ingredientes: torta.ingredientes.map((ingrediente) => ({
+          ...ingrediente,
+          unitCost: 0,
+          subtotalCost: 0,
+        })),
+      });
     }
   }
 
