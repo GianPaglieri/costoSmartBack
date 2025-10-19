@@ -63,8 +63,15 @@ exports.obtenerCantidadVentasSemana = async (req, res, next) => {
 exports.obtenerGanancias = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const ganancias = await ventaService.obtenerGanancias(userId);
-    res.json({ ganancias });
+    const { current } = getLast7DaysRange();
+    const ganancias = await ventaService.obtenerGanancias(userId, current);
+    res.json({
+      ganancias,
+      rango: {
+        inicio: current.start.toISOString(),
+        fin: current.end.toISOString()
+      }
+    });
   } catch (error) {
     next(error);
   }
