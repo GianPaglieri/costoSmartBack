@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+﻿const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { ensurePackagingForUser } = require('./packagingService');
@@ -21,11 +21,17 @@ const transporter = nodemailer.createTransport({
 exports.loginUser = async ({ email, contrasena }) => {
   const user = await User.findOne({ where: { email } });
   if (!user) throw new Error('Usuario no encontrado');
-  
+
   const isMatch = await bcrypt.compare(contrasena, user.contrasena);
   if (!isMatch) throw new Error('Credenciales invalidas');
 
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+  const payload = {
+    userId: user.id,
+    email: user.email,
+    name: user.nombre || (user.email ? user.email.split('@')[0] : null),
+  };
+
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
   return token;
 };
 
@@ -82,3 +88,4 @@ exports.resetPassword = async (token, newPassword) => {
   user.contrasena = hashedPassword;
   await user.save();
 };
+

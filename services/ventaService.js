@@ -110,8 +110,12 @@ const verificarStockIngredientes = async (idTorta, userId) => {
 };
 
 // Cantidad de ventas
-exports.obtenerCantidadVentas = async (userId) => {
-  return await Venta.count({ where: { id_usuario: userId } });
+exports.obtenerCantidadVentas = async (userId, range) => {
+  const where = { id_usuario: userId };
+  if (range?.start && range?.end) {
+    where.fecha_venta = { [Sequelize.Op.between]: [range.start, range.end] };
+  }
+  return await Venta.count({ where });
 };
 
 // Cantidad ventas semana

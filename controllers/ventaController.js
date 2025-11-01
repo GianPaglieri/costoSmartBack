@@ -42,8 +42,15 @@ exports.registrarVenta = async (req, res, next) => {
 exports.obtenerCantidadVentas = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const cantidad = await ventaService.obtenerCantidadVentas(userId);
-    res.json({ cantidadVentas: cantidad });
+    const { current } = getLast7DaysRange();
+    const cantidad = await ventaService.obtenerCantidadVentas(userId, current);
+    res.json({
+      cantidadVentas: cantidad,
+      rango: {
+        inicio: current.start.toISOString(),
+        fin: current.end.toISOString()
+      }
+    });
   } catch (error) {
     next(error);
   }
