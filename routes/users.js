@@ -1,17 +1,19 @@
 const express = require('express');
-const router = express.Router();
 const { body } = require('express-validator');
+
 const {
   createUser,
   getUsers,
   requestPasswordReset,
   resetPassword,
   loginUser,
+  changePassword,
 } = require('../controllers/userController');
 const { requireAuth } = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validationMiddleware');
 
-// Define las rutas usando las funciones importadas directamente
+const router = express.Router();
+
 router.get('/', requireAuth, getUsers);
 
 router.post(
@@ -19,7 +21,7 @@ router.post(
   validate([
     body('nombre').trim().notEmpty().escape(),
     body('email').isEmail().normalizeEmail(),
-    body('contrasena').isLength({ min: 6 }).trim()
+    body('contrasena').isLength({ min: 6 }).trim(),
   ]),
   createUser
 );
@@ -27,10 +29,7 @@ router.post(
 router.post(
   '/login',
   // Validaciones relajadas temporalmente: permitir cualquier email/contraseña
-  validate([
-    body('email').trim(),
-    body('contrasena').trim()
-  ]),
+  validate([body('email').trim(), body('contrasena').trim()]),
   loginUser
 );
 
@@ -44,9 +43,19 @@ router.post(
   '/reset-password',
   validate([
     body('token').trim().notEmpty().escape(),
-    body('newPassword').isLength({ min: 6 }).trim()
+    body('newPassword').isLength({ min: 6 }).trim(),
   ]),
   resetPassword
+);
+
+router.post(
+  '/change-password',
+  requireAuth,
+  validate([
+    body('currentPassword').trim().notEmpty(),
+    body('newPassword').isLength({ min: 6 }).trim(),
+  ]),
+  changePassword
 );
 
 module.exports = router;

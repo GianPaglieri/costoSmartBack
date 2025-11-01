@@ -2,7 +2,9 @@ const userService = require('../services/userService');
 
 exports.loginUser = async (req, res, next) => {
   const { email, contrasena } = req.body;
-  if (!email || !contrasena) return res.status(400).json({ error: 'Faltan datos' });
+  if (!email || !contrasena) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
 
   try {
     const { token, user } = await userService.loginUser({ email, contrasena });
@@ -15,7 +17,9 @@ exports.loginUser = async (req, res, next) => {
 
 exports.createUser = async (req, res, next) => {
   const { nombre, email, contrasena } = req.body;
-  if (!nombre || !email || !contrasena) return res.status(400).json({ error: 'Faltan datos' });
+  if (!nombre || !email || !contrasena) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
 
   try {
     const user = await userService.createUser({ nombre, email, contrasena });
@@ -37,7 +41,9 @@ exports.getUsers = async (req, res, next) => {
 
 exports.requestPasswordReset = async (req, res, next) => {
   const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email es requerido' });
+  if (!email) {
+    return res.status(400).json({ error: 'Email es requerido' });
+  }
 
   try {
     await userService.requestPasswordReset(email);
@@ -49,12 +55,33 @@ exports.requestPasswordReset = async (req, res, next) => {
 
 exports.resetPassword = async (req, res, next) => {
   const { token, newPassword } = req.body;
-  if (!token || !newPassword) return res.status(400).json({ error: 'Faltan datos' });
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
 
   try {
     await userService.resetPassword(token, newPassword);
     res.json({ success: true, message: 'Contraseña restablecida' });
   } catch (error) {
+    next(error);
+  }
+};
+
+exports.changePassword = async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
+
+  try {
+    await userService.changePassword({
+      userId: req.userId,
+      currentPassword,
+      newPassword,
+    });
+    res.json({ success: true, message: 'Contraseña actualizada correctamente' });
+  } catch (error) {
+    error.status = error.status || 400;
     next(error);
   }
 };

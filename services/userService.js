@@ -1,8 +1,8 @@
-﻿const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const { ensurePackagingForUser } = require('./packagingService');
-const nodemailer = require('nodemailer');
 require('../config/env');
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -11,24 +11,37 @@ const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-// Nodemailer config
-const transporter = nodemailer.createTransport({
-  service: 'Gmail',
-  auth: { user: EMAIL_USER, pass: EMAIL_PASS }
-});
+const hasMailCredentials = EMAIL_USER && EMAIL_PASS;
+const transporter = hasMailCredentials
+  ? nodemailer.createTransport({
+      service: 'Gmail',
+      auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+    })
+  : null;
 
-// Login
+const normalizeFrontendUrl = () => {
+  if (!FRONTEND_URL) {
+    return null;
+  }
+  return FRONTEND_URL.endsWith('/') ? FRONTEND_URL.slice(0, -1) : FRONTEND_URL;
+};
+
 exports.loginUser = async ({ email, contrasena }) => {
   const user = await User.findOne({ where: { email } });
-  if (!user) throw new Error('Usuario no encontrado');
+  if (!user) {
+    throw new Error('Usuario no encontrado');
+  }
 
   const isMatch = await bcrypt.compare(contrasena, user.contrasena);
-  if (!isMatch) throw new Error('Credenciales invalidas');
+  if (!isMatch) {
+    throw new Error('Credenciales inválidas');
+  }
 
   const payload = {
     userId: user.id,
     email: user.email,
     name: user.nombre || (user.email ? user.email.split('@')[0] : null),
+    role: user.rol || 'Administrador',
   };
 
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
@@ -42,25 +55,26 @@ exports.loginUser = async ({ email, contrasena }) => {
   return { token, user: userPublic };
 };
 
-// Registro
 exports.createUser = async ({ nombre, email, contrasena }) => {
   const hashedPassword = await bcrypt.hash(contrasena, 10);
   const user = await User.create({ nombre, email, contrasena: hashedPassword });
-
   await ensurePackagingForUser(user.id);
-
   return user;
 };
 
-// Listado de usuarios
 exports.getUsers = async () => {
-  return await User.findAll();
+  return User.findAll();
 };
 
-// Solicitud de reset password
 exports.requestPasswordReset = async (email) => {
   const user = await User.findOne({ where: { email } });
-  if (!user) throw new Error('Usuario no encontrado');
+  if (!user) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  if (!transporter) {
+    throw new Error('Servicio de correo no configurado');
+  }
 
   const resetToken = jwt.sign(
     { userId: user.id, action: 'reset-password' },
@@ -68,31 +82,56 @@ exports.requestPasswordReset = async (email) => {
     { expiresIn: '1h' }
   );
 
-  const resetLink = `${FRONTEND_URL}/reset-password/${resetToken}`;
+  const frontendBase = normalizeFrontendUrl();
+  const resetLink = frontendBase
+    ? `${frontendBase}/reset-password/${resetToken}`
+    : `${resetToken}`;
 
   await transporter.sendMail({
     from: EMAIL_USER,
     to: user.email,
-    subject: 'Recuperacion de contrasena',
+    subject: 'Recuperación de contraseña',
     html: `
-      <p>Hola ${user.nombre},</p>
-      <p>Para restablecer tu contrasena haz clic en el siguiente enlace (valido 1 hora):</p>
+      <p>Hola ${user.nombre || ''},</p>
+      <p>Para restablecer tu contraseña hacé clic en el siguiente enlace (válido por 1 hora):</p>
       <p><a href="${resetLink}">${resetLink}</a></p>
-      <p>Si no solicitaste esto, puedes ignorar este correo.</p>
-    `
+      <p>Si no solicitaste este cambio, podés ignorar este correo.</p>
+    `,
   });
 };
 
-// Reset password
 exports.resetPassword = async (token, newPassword) => {
   const decoded = jwt.verify(token, RESET_SECRET_KEY);
-  if (decoded.action !== 'reset-password') throw new Error('Token invalido');
+  if (decoded.action !== 'reset-password') {
+    throw new Error('Token inválido');
+  }
 
   const user = await User.findByPk(decoded.userId);
-  if (!user) throw new Error('Usuario no encontrado');
+  if (!user) {
+    throw new Error('Usuario no encontrado');
+  }
 
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   user.contrasena = hashedPassword;
   await user.save();
 };
 
+exports.changePassword = async ({ userId, currentPassword, newPassword }) => {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    const error = new Error('Usuario no encontrado');
+    error.status = 404;
+    throw error;
+  }
+
+  const matches = await bcrypt.compare(currentPassword, user.contrasena);
+  if (!matches) {
+    const error = new Error('La contraseña actual no es correcta');
+    error.status = 400;
+    throw error;
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.contrasena = hashedPassword;
+  await user.save();
+};

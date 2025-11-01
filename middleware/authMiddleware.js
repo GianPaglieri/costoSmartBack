@@ -1,5 +1,3 @@
-// middlewares/authMiddleware.js
-
 const jwt = require('jsonwebtoken');
 require('../config/env');
 
@@ -27,4 +25,3 @@ const requireAuth = (req, res, next) => {
 };
 
 module.exports = { requireAuth };
-
