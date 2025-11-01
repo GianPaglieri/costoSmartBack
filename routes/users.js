@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const { body } = require('express-validator');
 
 const {
@@ -28,8 +28,16 @@ router.post(
 
 router.post(
   '/login',
-  // Validaciones relajadas temporalmente: permitir cualquier email/contraseña
-  validate([body('email').trim(), body('contrasena').trim()]),
+  validate([
+    body('email')
+      .isEmail()
+      .withMessage('Ingresá un correo válido.')
+      .normalizeEmail(),
+    body('contrasena')
+      .trim()
+      .isLength({ min: 6 })
+      .withMessage('La contraseña debe tener al menos 6 caracteres.'),
+  ]),
   loginUser
 );
 
@@ -52,10 +60,18 @@ router.post(
   '/change-password',
   requireAuth,
   validate([
-    body('currentPassword').trim().notEmpty(),
-    body('newPassword').isLength({ min: 6 }).trim(),
+    body('currentPassword')
+      .trim()
+      .notEmpty()
+      .withMessage('Ingresá tu contraseña actual'),
+    body('newPassword')
+      .trim()
+      .isLength({ min: 6 })
+      .withMessage('La nueva contraseña debe tener al menos 6 caracteres'),
   ]),
   changePassword
 );
 
 module.exports = router;
+
+
