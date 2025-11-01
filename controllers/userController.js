@@ -5,8 +5,8 @@ exports.loginUser = async (req, res, next) => {
   if (!email || !contrasena) return res.status(400).json({ error: 'Faltan datos' });
 
   try {
-    const token = await userService.loginUser({ email, contrasena });
-    res.json({ success: true, token });
+    const { token, user } = await userService.loginUser({ email, contrasena });
+    res.json({ success: true, token, user });
   } catch (error) {
     error.status = 401;
     next(error);

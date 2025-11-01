@@ -32,7 +32,14 @@ exports.loginUser = async ({ email, contrasena }) => {
   };
 
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
-  return token;
+  const userPublic = {
+    id: user.id,
+    nombre: user.nombre,
+    email: user.email,
+    role: user.rol || 'Administrador',
+  };
+
+  return { token, user: userPublic };
 };
 
 // Registro
