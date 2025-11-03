@@ -18,28 +18,11 @@ router.get('/', requireAuth, getUsers);
 
 router.post(
   '/register',
-  validate([
-    body('nombre').trim().notEmpty().escape(),
-    body('email').isEmail().normalizeEmail(),
-    body('contrasena').isLength({ min: 6 }).trim(),
-  ]),
+  validate([body('nombre').trim().notEmpty().escape()]),
   createUser
 );
 
-router.post(
-  '/login',
-  validate([
-    body('email')
-      .isEmail()
-      .withMessage('Ingresá un correo válido.')
-      .normalizeEmail(),
-    body('contrasena')
-      .trim()
-      .isLength({ min: 6 })
-      .withMessage('La contraseña debe tener al menos 6 caracteres.'),
-  ]),
-  loginUser
-);
+router.post('/login', loginUser);
 
 router.post(
   '/request-password-reset',
@@ -63,15 +46,13 @@ router.post(
     body('currentPassword')
       .trim()
       .notEmpty()
-      .withMessage('Ingresá tu contraseña actual'),
+      .withMessage('Ingresa tu contrasena actual'),
     body('newPassword')
       .trim()
       .isLength({ min: 6 })
-      .withMessage('La nueva contraseña debe tener al menos 6 caracteres'),
+      .withMessage('La nueva contrasena debe tener al menos 6 caracteres'),
   ]),
   changePassword
 );
 
 module.exports = router;
-
-
