@@ -1,11 +1,12 @@
-const Ingrediente = require('../models/Ingrediente');
+﻿const Ingrediente = require('../models/Ingrediente');
 const Receta = require('../models/Receta');
+const Torta = require('../models/Torta');
+const db = require('../database/connection');
 const { actualizarListaPrecios } = require('../services/calculadoraCostos');
-
 
 // Obtener todos los ingredientes del usuario
 exports.obtenerIngredientes = async (userId) => {
-  return await Ingrediente.findAll({ where: { id_usuario: userId } });
+  return Ingrediente.findAll({ where: { id_usuario: userId } });
 };
 
 // Guardar nuevo ingrediente
@@ -20,7 +21,7 @@ exports.guardarIngrediente = async ({ nombre, unidad_Medida, tamano_Paquete, cos
     tamano_Paquete,
     costo,
     CantidadStock,
-    id_usuario: userId
+    id_usuario: userId,
   });
 };
 
@@ -40,29 +41,86 @@ exports.editarIngrediente = async ({ id, nombre, unidad_Medida, tamano_Paquete, 
 
 // Obtener ingredientes con menos stock (TOP 5)
 exports.obtenerIngredientesMenosStock = async (userId) => {
-  return await Ingrediente.findAll({
+  return Ingrediente.findAll({
     attributes: ['id', 'nombre', 'unidad_Medida', 'tamano_Paquete', 'costo', 'CantidadStock'],
     where: { id_usuario: userId },
     order: [['CantidadStock', 'ASC']],
-    limit: 5
+    limit: 5,
   });
 };
 
 // Eliminar ingrediente
 exports.eliminarIngrediente = async ({ id, userId }) => {
-  // Primero verificamos si el ingrediente existe y pertenece al usuario
   const ingrediente = await Ingrediente.findOne({ where: { id, id_usuario: userId } });
   if (!ingrediente) {
-    throw new Error('No se encontró el ingrediente asociado al usuario autenticado');
+    throw new Error('No se encontro el ingrediente asociado al usuario autenticado');
   }
 
-  // Validamos si el ingrediente está asociado a alguna receta
-  const recetasRelacionadas = await Receta.findOne({ where: { ID_INGREDIENTE: id, id_usuario: userId } });
+  const recetasVigentes = await Receta.findAll({
+    where: { ID_INGREDIENTE: id, id_usuario: userId },
+    include: [
+      {
+        model: Torta,
+        attributes: ['ID_TORTA', 'nombre_torta'],
+        required: false,
+      },
+    ],
+  });
 
-  if (recetasRelacionadas) {
-    throw new Error('No se puede eliminar el ingrediente porque está asignado a una receta');
+  const tortasReferenciadas = new Map();
+  recetasVigentes.forEach((receta) => {
+    const tortaId = receta.ID_TORTA;
+    const nombre = receta.Torta?.nombre_torta || `Torta ID ${tortaId}`;
+    tortasReferenciadas.set(tortaId, nombre);
+  });
+
+  let recetasLegacy = [];
+  try {
+    const [rows] = await db.query('SELECT ID_TORTA FROM recetas_old WHERE ID_INGREDIENTE = ?', {
+      replacements: [id],
+    });
+    recetasLegacy = rows;
+  } catch (error) {
+    const code = error?.original?.code;
+    if (code && code !== 'ER_NO_SUCH_TABLE') {
+      throw error;
+    }
   }
 
-  // Si no está asociado, lo eliminamos
-  await Ingrediente.destroy({ where: { id } });
+  const legacyIds = recetasLegacy?.map((row) => row.ID_TORTA).filter(Boolean) || [];
+  if (legacyIds.length) {
+    const idsPendientes = legacyIds.filter((legacyId) => !tortasReferenciadas.has(legacyId));
+    if (idsPendientes.length) {
+      const tortas = await Torta.findAll({
+        where: { ID_TORTA: idsPendientes },
+        attributes: ['ID_TORTA', 'nombre_torta'],
+      });
+      tortas.forEach((torta) => {
+        tortasReferenciadas.set(torta.ID_TORTA, torta.nombre_torta || `Torta ID ${torta.ID_TORTA}`);
+      });
+    }
+    legacyIds.forEach((legacyId) => {
+      if (!tortasReferenciadas.has(legacyId)) {
+        tortasReferenciadas.set(legacyId, `Torta ID ${legacyId}`);
+      }
+    });
+  }
+
+  if (tortasReferenciadas.size) {
+    const lista = Array.from(tortasReferenciadas.values());
+    const error = new Error(
+      `No se puede eliminar el ingrediente porque se usa en las recetas: ${lista.join(', ')}`
+    );
+    error.code = 'INGREDIENTE_EN_USO';
+    error.status = 409;
+    error.details = {
+      recetas: Array.from(tortasReferenciadas.entries()).map(([tortaId, tortaNombre]) => ({
+        tortaId,
+        tortaNombre,
+      })),
+    };
+    throw error;
+  }
+
+  await Ingrediente.destroy({ where: { id, id_usuario: userId } });
 };
