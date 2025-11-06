@@ -1,4 +1,4 @@
-﻿const Ingrediente = require('../models/Ingrediente');
+const Ingrediente = require('../models/Ingrediente');
 const Receta = require('../models/Receta');
 const Torta = require('../models/Torta');
 const db = require('../database/connection');
@@ -68,10 +68,33 @@ exports.eliminarIngrediente = async ({ id, userId }) => {
   });
 
   const tortasReferenciadas = new Map();
+  const addReferencia = (tortaId, nombre, source) => {
+    if (!tortaId) {
+      return;
+    }
+    const existente = tortasReferenciadas.get(tortaId);
+    if (existente) {
+      if (nombre && nombre !== existente.nombre) {
+        existente.nombre = nombre;
+      }
+      existente.sources.add(source);
+    } else {
+      tortasReferenciadas.set(tortaId, {
+        nombre,
+        sources: new Set([source]),
+      });
+    }
+  };
+
+  const vigentesIds = new Set();
   recetasVigentes.forEach((receta) => {
     const tortaId = receta.ID_TORTA;
+    if (tortaId === undefined || tortaId === null) {
+      return;
+    }
+    vigentesIds.add(tortaId);
     const nombre = receta.Torta?.nombre_torta || `Torta ID ${tortaId}`;
-    tortasReferenciadas.set(tortaId, nombre);
+    addReferencia(tortaId, nombre, 'receta');
   });
 
   let recetasLegacy = [];
@@ -87,36 +110,64 @@ exports.eliminarIngrediente = async ({ id, userId }) => {
     }
   }
 
-  const legacyIds = recetasLegacy?.map((row) => row.ID_TORTA).filter(Boolean) || [];
+  let legacyIds = recetasLegacy?.map((row) => row.ID_TORTA).filter(Boolean) || [];
   if (legacyIds.length) {
-    const idsPendientes = legacyIds.filter((legacyId) => !tortasReferenciadas.has(legacyId));
-    if (idsPendientes.length) {
-      const tortas = await Torta.findAll({
-        where: { ID_TORTA: idsPendientes },
-        attributes: ['ID_TORTA', 'nombre_torta'],
-      });
-      tortas.forEach((torta) => {
-        tortasReferenciadas.set(torta.ID_TORTA, torta.nombre_torta || `Torta ID ${torta.ID_TORTA}`);
+    const legacyStale = legacyIds.filter((legacyId) => !vigentesIds.has(legacyId));
+    if (legacyStale.length) {
+      for (const legacyId of legacyStale) {
+        try {
+          await db.query('DELETE FROM recetas_old WHERE ID_INGREDIENTE = ? AND ID_TORTA = ?', {
+            replacements: [id, legacyId],
+          });
+        } catch (error) {
+          const code = error?.original?.code;
+          if (code && code !== 'ER_NO_SUCH_TABLE') {
+            throw error;
+          }
+        }
+      }
+      legacyIds = legacyIds.filter((legacyId) => !legacyStale.includes(legacyId));
+    }
+
+    if (legacyIds.length) {
+      const idsPendientes = legacyIds.filter((legacyId) => !tortasReferenciadas.has(legacyId));
+      if (idsPendientes.length) {
+        const tortas = await Torta.findAll({
+          where: { ID_TORTA: idsPendientes },
+          attributes: ['ID_TORTA', 'nombre_torta'],
+        });
+        tortas.forEach((torta) => {
+          addReferencia(
+            torta.ID_TORTA,
+            torta.nombre_torta || `Torta ID ${torta.ID_TORTA}`,
+            'legacy'
+          );
+        });
+      }
+
+      legacyIds.forEach((legacyId) => {
+        const existente = tortasReferenciadas.get(legacyId);
+        if (existente) {
+          existente.sources.add('legacy');
+        } else {
+          addReferencia(legacyId, `Torta ID ${legacyId}`, 'legacy');
+        }
       });
     }
-    legacyIds.forEach((legacyId) => {
-      if (!tortasReferenciadas.has(legacyId)) {
-        tortasReferenciadas.set(legacyId, `Torta ID ${legacyId}`);
-      }
-    });
   }
 
   if (tortasReferenciadas.size) {
-    const lista = Array.from(tortasReferenciadas.values());
+    const lista = Array.from(tortasReferenciadas.values()).map((info) => info.nombre);
     const error = new Error(
       `No se puede eliminar el ingrediente porque se usa en las recetas: ${lista.join(', ')}`
     );
     error.code = 'INGREDIENTE_EN_USO';
     error.status = 409;
     error.details = {
-      recetas: Array.from(tortasReferenciadas.entries()).map(([tortaId, tortaNombre]) => ({
+      recetas: Array.from(tortasReferenciadas.entries()).map(([tortaId, info]) => ({
         tortaId,
-        tortaNombre,
+        tortaNombre: info.nombre,
+        sources: Array.from(info.sources),
       })),
     };
     throw error;
