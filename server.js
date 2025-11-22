@@ -5,7 +5,7 @@ require('./config/env');
 const db = require('./database/connection');
 const path = require('path');
 
-// Conexión a la base de datos
+// Conexion a la base de datos
 db.authenticate().catch((error) => {
   console.error('Error al conectar a la base de datos:', error);
 });

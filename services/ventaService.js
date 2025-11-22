@@ -120,12 +120,11 @@ exports.obtenerCantidadVentas = async (userId, range) => {
 
 // Cantidad ventas semana
 exports.obtenerCantidadVentasSemana = async (userId, currentRange) => {
-  return await Venta.count({
-    where: {
-      id_usuario: userId,
-      fecha_venta: { [Sequelize.Op.between]: [currentRange.start, currentRange.end] }
-    }
-  });
+  const where = { id_usuario: userId };
+  if (currentRange?.start && currentRange?.end) {
+    where.fecha_venta = { [Sequelize.Op.between]: [currentRange.start, currentRange.end] };
+  }
+  return await Venta.count({ where });
 };
 
 // Obtener ganancias
@@ -135,22 +134,29 @@ exports.obtenerGanancias = async (userId, range) => {
 
 // Porcentaje de ventas semanales
 exports.obtenerPorcentajeVentas = async (userId, current, last) => {
-  const [ventasActual, ventasAnterior] = await Promise.all([
-    Venta.count({
-      where: { id_usuario: userId, fecha_venta: { [Sequelize.Op.between]: [current.start, current.end] } }
-    }),
-    Venta.count({
-      where: { id_usuario: userId, fecha_venta: { [Sequelize.Op.between]: [last.start, last.end] } }
-    })
-  ]);
+  const buildWhere = (range) => {
+    const where = { id_usuario: userId };
+    if (range?.start && range?.end) {
+      where.fecha_venta = { [Sequelize.Op.between]: [range.start, range.end] };
+    }
+    return where;
+  };
 
-  let porcentaje;
-  if (ventasAnterior === 0) {
-    porcentaje = ventasActual > 0 ? '+∞%' : '0%';
-  } else {
-    const change = ((ventasActual - ventasAnterior) / ventasAnterior) * 100;
-    porcentaje = `${Math.round(change)}%`;
-    if (change > 0) porcentaje = `+${porcentaje}`;
+  const ventasActual = await Venta.count({ where: buildWhere(current) });
+
+  let ventasAnterior = null;
+  if (last?.start && last?.end) {
+    ventasAnterior = await Venta.count({ where: buildWhere(last) });
+  }
+
+  let porcentaje = null;
+  if (typeof ventasAnterior === 'number') {
+    if (ventasAnterior === 0) {
+      porcentaje = ventasActual > 0 ? null : 0;
+    } else {
+      const change = ((ventasActual - ventasAnterior) / ventasAnterior) * 100;
+      porcentaje = Number.isFinite(change) ? Math.round(change * 100) / 100 : null;
+    }
   }
 
   return { ventasActual, ventasAnterior, porcentaje };
