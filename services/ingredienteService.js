@@ -51,12 +51,26 @@ exports.obtenerIngredientesMenosStock = async (userId) => {
 exports.eliminarIngrediente = async ({ id, userId }) => {
   const ingrediente = await Ingrediente.findOne({ where: { id, id_usuario: userId } });
   if (!ingrediente) {
-    throw new Error('No se encontro el ingrediente asociado al usuario autenticado');
+    const error = new Error('No se encontró el ingrediente asociado al usuario autenticado');
+    error.status = 404;
+    error.code = 'INGREDIENTE_NO_ENCONTRADO';
+    throw error;
   }
 
-  const recetasRelacionadas = await Receta.findOne({ where: { ID_INGREDIENTE: id, id_usuario: userId } });
-  if (recetasRelacionadas) {
-    throw new Error('No se puede eliminar el ingrediente porque esta asignado a una receta');
+  const recetasRelacionadas = await Receta.findAll({
+    where: { ID_INGREDIENTE: id, id_usuario: userId },
+    attributes: ['ID_TORTA'],
+    raw: true,
+  });
+
+  if (recetasRelacionadas.length > 0) {
+    const error = new Error('No se puede eliminar el ingrediente porque está asignado a una receta');
+    error.status = 409;
+    error.code = 'INGREDIENTE_EN_RECETA';
+    error.details = {
+      recetas: recetasRelacionadas.map((r) => r.ID_TORTA),
+    };
+    throw error;
   }
 
   await Ingrediente.destroy({ where: { id, id_usuario: userId } });

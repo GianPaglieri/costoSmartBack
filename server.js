@@ -14,26 +14,27 @@ db.authenticate().catch((error) => {
 // CONFIGURACIÓN CORS
 // ******************************
 
+// Permitir lista de orígenes separados por coma o wildcard en desarrollo
+const rawCorsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
+const parsedOrigins = rawCorsOrigin
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
 
-
-// Leer origen permitido desde variable de entorno, por defecto http://localhost:3000
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
-
-if (corsOrigin === '*') {
+if (parsedOrigins.includes('*')) {
   console.warn(
-    "Advertencia: CORS configurado con origen abierto ('*'). Esto solo debe usarse en desarrollo."
+    "Advertencia: CORS configurado con origen abierto ('*'). Úsalo solo en desarrollo."
   );
 }
 
 const corsOptions = {
-    origin: corsOrigin,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  };
+  origin: parsedOrigins.length === 1 ? parsedOrigins[0] : parsedOrigins,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // <-- NECESARIO para solicitudes preflight
-
+app.options('*', cors(corsOptions)); // necesario para preflight
 
 // ******************************
 // FIN CONFIGURACIÓN CORS

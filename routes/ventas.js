@@ -17,5 +17,6 @@ router.get('/cantidad', ventaController.obtenerCantidadVentas);
 router.get('/cantidad-semana', ventaController.obtenerCantidadVentasSemana);
 router.get('/porcentaje-ventas', ventaController.obtenerPorcentajeVentas);
 router.get('/ganancias', ventaController.obtenerGanancias);
+router.get('/resumen', ventaController.obtenerResumenVentas);
 
 module.exports = router;

@@ -1,15 +1,29 @@
 const ventaService = require('../services/ventaService');
 
 const RANGE_DAY_MAP = {
+  '1': 1,
+  hoy: 1,
+  dia: 1,
+  day: 1,
   '7': 7,
+  semana: 7,
+  week: 7,
   '30': 30,
+  mes: 30,
+  month: 30,
 };
 
 const normalizeRangeKey = (range) => {
   if (!range) return '7';
   const key = String(range).toLowerCase();
-  if (key === 'all') return 'all';
-  return RANGE_DAY_MAP[key] ? key : '7';
+  if (key === 'all' || key === 'todo') return 'all';
+  if (RANGE_DAY_MAP[key]) {
+    // homogenizar keys a '1','7','30'
+    if (RANGE_DAY_MAP[key] === 1) return '1';
+    if (RANGE_DAY_MAP[key] === 7) return '7';
+    if (RANGE_DAY_MAP[key] === 30) return '30';
+  }
+  return '7';
 };
 
 const buildRangeWindow = (days) => {
@@ -53,7 +67,8 @@ const serializeRange = (range) => {
 exports.obtenerVentas = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const ventas = await ventaService.obtenerVentas(userId);
+    const { current } = getRangeWindows(req.query.range);
+    const ventas = await ventaService.obtenerVentas(userId, current);
     res.json(ventas);
   } catch (error) {
     next(error);
@@ -141,6 +156,27 @@ exports.obtenerPorcentajeVentas = async (req, res, next) => {
       ventasActual: datos.ventasActual,
       ventasAnterior: datos.ventasAnterior,
       porcentajeCambio: datos.porcentaje,
+      rangoActual,
+      rangoAnterior,
+      rango: rangoActual,
+      range: key,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.obtenerResumenVentas = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const { current, last, key } = getRangeWindows(req.query.range);
+    const datos = await ventaService.obtenerResumen(userId, current, last);
+
+    const rangoActual = serializeRange(current);
+    const rangoAnterior = serializeRange(last);
+
+    res.json({
+      ...datos,
       rangoActual,
       rangoAnterior,
       rango: rangoActual,

@@ -7,8 +7,37 @@ const { actualizarStockIngredientes } = require('../services/actualizacionStock'
 const { calcularGanancias } = require('../services/gananciasService');
 const Sequelize = require('sequelize');
 
-// Obtener ventas
-exports.obtenerVentas = async (userId) => {
+const toNumber = (value, fallback = 0) => {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : fallback;
+};
+
+const aggregateVentas = (ventas) => {
+  const counts = new Map();
+  const ingreso = ventas.reduce((acc, venta) => {
+    const ingresoUnitario = toNumber(venta.precio_torta, 0);
+    const idTorta = venta.ID_TORTA;
+    if (idTorta !== null && idTorta !== undefined) {
+      counts.set(idTorta, (counts.get(idTorta) || 0) + 1);
+    }
+    return acc + ingresoUnitario;
+  }, 0);
+
+  const uniqueIds = Array.from(counts.keys());
+  return { ingreso, counts, ids: uniqueIds, cantidad: ventas.length };
+};
+
+const calcularCostos = (countsMap, costosPorTorta) => {
+  let totalCosto = 0;
+  for (const [idTorta, cantidad] of countsMap.entries()) {
+    const costoUnitario = toNumber(costosPorTorta.get(idTorta)?.costo_total, 0);
+    totalCosto += costoUnitario * cantidad;
+  }
+  return totalCosto;
+};
+
+// Obtener ventas (opcionalmente filtradas por rango)
+exports.obtenerVentas = async (userId, range) => {
   const ventas = await Venta.findAll({
     include: [{
       model: Torta,
@@ -16,7 +45,12 @@ exports.obtenerVentas = async (userId) => {
       as: 'Tortum',
       where: { ID_TORTA: Sequelize.col('Venta.ID_TORTA') }
     }],
-    where: { id_usuario: userId }
+    where: {
+      id_usuario: userId,
+      ...(range?.start && range?.end
+        ? { fecha_venta: { [Sequelize.Op.between]: [range.start, range.end] } }
+        : {}),
+    }
   });
 
   return ventas.map((venta) => ({
@@ -160,4 +194,110 @@ exports.obtenerPorcentajeVentas = async (userId, current, last) => {
   }
 
   return { ventasActual, ventasAnterior, porcentaje };
+};
+
+exports.obtenerResumen = async (userId, currentRange, previousRange) => {
+  // Traer ventas actuales y anteriores
+  const [ventasActualesRaw, ventasAnterioresRaw] = await Promise.all([
+    Venta.findAll({
+      where: {
+        id_usuario: userId,
+        ...(currentRange?.start && currentRange?.end
+          ? { fecha_venta: { [Sequelize.Op.between]: [currentRange.start, currentRange.end] } }
+          : {}),
+      },
+      attributes: ['ID_TORTA', 'precio_torta'],
+    }),
+    previousRange?.start && previousRange?.end
+      ? Venta.findAll({
+          where: {
+            id_usuario: userId,
+            fecha_venta: { [Sequelize.Op.between]: [previousRange.start, previousRange.end] },
+          },
+          attributes: ['ID_TORTA', 'precio_torta'],
+        })
+      : [],
+  ]);
+
+  const aggActual = aggregateVentas(ventasActualesRaw);
+  const aggAnterior = aggregateVentas(ventasAnterioresRaw);
+
+  // Buscar costos para las tortas involucradas
+  const idsTortas = Array.from(new Set([...aggActual.ids, ...aggAnterior.ids]));
+  const costosPorTorta = new Map();
+  const tortasPorId = new Map();
+  if (idsTortas.length > 0) {
+    const precios = await ListaPrecios.findAll({
+      where: { id_usuario: userId, id_torta: { [Sequelize.Op.in]: idsTortas } },
+      attributes: ['id_torta', 'costo_total', 'precio_lista'],
+    });
+    precios.forEach((p) => {
+      costosPorTorta.set(p.id_torta, { costo_total: toNumber(p.costo_total, 0), precio_lista: toNumber(p.precio_lista, 0) });
+    });
+
+    const tortas = await Torta.findAll({
+      where: { id_usuario: userId, ID_TORTA: { [Sequelize.Op.in]: idsTortas } },
+      attributes: ['ID_TORTA', 'nombre_torta', 'imagen'],
+    });
+    tortas.forEach((t) => {
+      const idNum = toNumber(t.ID_TORTA, t.ID_TORTA);
+      tortasPorId.set(idNum, {
+        id: idNum,
+        nombre: t.nombre_torta,
+        imagen: t.imagen,
+      });
+    });
+  }
+
+  const costoActual = calcularCostos(aggActual.counts, costosPorTorta);
+  const costoAnterior = calcularCostos(aggAnterior.counts, costosPorTorta);
+  const margenActual = aggActual.ingreso - costoActual;
+  const margenAnterior = aggAnterior.ingreso - costoAnterior;
+
+  const delta = (curr, prev) => {
+    if (prev === null || prev === undefined) return null;
+    if (prev === 0) return curr > 0 ? null : 0;
+    const change = ((curr - prev) / prev) * 100;
+    return Number.isFinite(change) ? Math.round(change * 100) / 100 : null;
+  };
+
+  // Distribución y top tortas (solo rango actual)
+  const totalVentasActual = aggActual.cantidad || 0;
+  const distribucion = Array.from(aggActual.counts.entries())
+    .map(([id, count]) => {
+      const info = tortasPorId.get(toNumber(id, id)) || {};
+      const name = info.nombre || `Torta ${id}`;
+      const costoUnit = toNumber(costosPorTorta.get(id)?.costo_total, 0);
+      const precioLista = toNumber(costosPorTorta.get(id)?.precio_lista, 0);
+      return {
+        idTorta: toNumber(id, id),
+        nombre: name,
+        imagen: info.imagen || null,
+        ventas: count,
+        ingresos: precioLista * count,
+        costo: costoUnit * count,
+        participacion: totalVentasActual > 0 ? Math.round((count / totalVentasActual) * 1000) / 10 : 0,
+      };
+    })
+    .sort((a, b) => b.ventas - a.ventas);
+
+  const topTortas = distribucion.slice(0, 5);
+
+  return {
+    rangoActual: currentRange || null,
+    rangoAnterior: previousRange || null,
+    ventasActual: aggActual.cantidad,
+    ventasAnterior: aggAnterior.cantidad,
+    ingresosActual: aggActual.ingreso,
+    ingresosAnterior: aggAnterior.ingreso,
+    costosActual: costoActual,
+    costosAnterior: costoAnterior,
+    margenActual,
+    margenAnterior,
+    porcentajeVentas: delta(aggActual.cantidad, aggAnterior.cantidad),
+    porcentajeIngresos: delta(aggActual.ingreso, aggAnterior.ingreso),
+    porcentajeMargen: delta(margenActual, margenAnterior),
+    distribucion,
+    topTortas,
+  };
 };
