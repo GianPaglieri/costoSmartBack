@@ -3,6 +3,7 @@
 const Torta = require('../models/Torta');
 const Receta = require('../models/Receta');
 const ListaPrecios = require('../models/ListaPrecios');
+const Venta = require('../models/Venta');
 const { calcularCostoTotalReceta, actualizarListaPrecios, calcularPrecioLista } = require('../services/calculadoraCostos');
 const recetaService = require('../services/recetaServices');
 
@@ -146,5 +147,6 @@ exports.eliminarTorta = async (id, userId) => {
 
   await Receta.destroy({ where: { ID_TORTA: id, id_usuario: userId } });
   await ListaPrecios.destroy({ where: { id_torta: id, id_usuario: userId } });
+  await Venta.destroy({ where: { ID_TORTA: id, id_usuario: userId } });
   await Torta.destroy({ where: { ID_TORTA: id, id_usuario: userId } });
 };
