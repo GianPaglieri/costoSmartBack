@@ -40,7 +40,8 @@ app.options('*', cors(corsOptions)); // necesario para preflight
 // FIN CONFIGURACIÓN CORS
 // ******************************
 
-app.use(express.json());
+app.use(express.json({ limit: process.env.BODY_LIMIT || '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: process.env.BODY_LIMIT || '10mb' }));
 
 
 // Importar rutas
